@@ -68,3 +68,9 @@ Before handoff:
 - ASCII scan passes; punctuation uses entities; no `@font-face`, remote asset, or `/assets/...` path.
 - `assets/registry.js` lists every chapter in order with real metadata.
 - `tools/verify.ps1` returns PASS and zero failures.
+
+
+
+## Kiro authoring guidance
+
+Use `.kiro/skills/` runbooks for `/add-topic`, `/author-page`, `/author-diagram`, `/author-questions`, and `/verify-system`; skills load on demand as slash commands. `.kiro/steering/learning-system.md` stays always in context with hard invariants.

@@ -245,3 +245,18 @@ Original flat folder was copied, never moved. It sits outside repo, unmodified.
 No framework · no bundler · no CDN · no lock file
 
 </div>
+
+## Kiro authoring guidance
+
+These runbooks guide future topic authoring:
+
+| Runbook | Purpose |
+|:--|:--|
+| `/add-topic` | Add topic structure and metadata |
+| `/author-page` | Author accessible offline pages |
+| `/author-diagram` | Author labelled diagrams |
+| `/author-questions` | Author study questions |
+| `/verify-system` | Run repository checks |
+| `.kiro/steering/learning-system.md` | Always-loaded hard invariants |
+
+Skills load on demand; steering stays in context. See `.kiro/skills/` and `.kiro/steering/`.
