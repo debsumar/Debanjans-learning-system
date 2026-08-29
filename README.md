@@ -2,7 +2,7 @@
 
 # 🎓 Debanjan's Learning System
 
-**One theme at the root. Infinite topics underneath.**
+**One theme at root. Infinite topics underneath.**  
 Offline-first certification notes. No build, no server, no network.
 
 ![Build](https://img.shields.io/badge/build-none-5db872?style=for-the-badge&labelColor=141413)
@@ -21,49 +21,52 @@ start index.html          # Windows
 open  index.html          # macOS / Linux
 ```
 
-That's it. Double-clicking the file also works.
+Double-clicking `index.html` works too.
 
 ---
 
 ## 🏗️ Architecture
 
-Presentation flows **down**. Nothing flows up. A new topic costs one folder + one card.
+Presentation flows down. Metadata validates from the side. Pages stay readable without JavaScript.
 
 ```mermaid
 graph TD
-  L["🏠 index.html<br/><b>launcher</b>"]
-  C["🎨 assets/theme.css<br/><i>the only stylesheet</i>"]
-  J["⚙️ assets/theme.js<br/><i>theme boot + toggle</i>"]
-  H["📘 topics/az-900/<br/><b>hub + 11 chapters</b>"]
-  T["🖌️ topic.css<br/><i>accent only, 10 lines</i>"]
-  F["➕ topics/next/<br/><i>drop-in</i>"]
-
+  L["index.html launcher"]
+  C["assets/theme.css shared CSS"]
+  J["assets/theme.js theme boot"]
+  R["assets/registry.js author metadata"]
+  V["tools/verify.ps1 drift checks"]
+  H["topics/az-900 hub and chapters"]
+  T["topic.css accent tokens"]
   L --> H
-  L -.-> F
-  C -.-> L & H & F
-  J -.-> L & H & F
+  C -.-> L
+  C -.-> H
+  J -.-> L
+  J -.-> H
+  R -.-> V
+  V -.-> L
+  V -.-> H
   T --> H
-
-  classDef p fill:#d97757,stroke:#faf9f5,stroke-width:2px,color:#141413,font-weight:bold
-  classDef t fill:#1f1e1c,stroke:#d4a27f,stroke-width:2px,color:#faf9f5
-  classDef f fill:#141413,stroke:#5db872,stroke-width:2px,color:#5db872,stroke-dasharray:5 5
-  class L,C,J p
-  class H,T t
-  class F f
+  classDef platform fill:#d97757,stroke:#faf9f5,stroke-width:2px,color:#141413
+  classDef topic fill:#1f1e1c,stroke:#d4a27f,stroke-width:2px,color:#faf9f5
+  classDef tool fill:#141413,stroke:#5db872,stroke-width:2px,color:#5db872
+  class L,C,J platform
+  class H,T topic
+  class R,V tool
 ```
 
 ```text
-📁 index.html          launcher
-📁 assets/             theme.css · theme.js      ← all presentation
-📁 docs/               THEME.md · NEW-TOPIC.md
-📁 topics/az-900/      topic.css + 12 pages      ← content only
+index.html          launcher
+assets/             theme.css, theme.js, registry.js
+content             topics/az-900/topic.css plus 12 pages
+tools/              verify.ps1
 ```
 
 ---
 
 ## 🎨 Palette
 
-Colour literals live **only** in the two `:root` blocks. Everything else uses `var(--token)`.
+Colour literals live in root token blocks. Components consume `var(--token)`.
 
 | | Token | Dark | Light | |
 |:--|:--|:--|:--|:--|
@@ -74,10 +77,10 @@ Colour literals live **only** in the two `:root` blocks. Everything else uses `v
 | ![](https://img.shields.io/badge/-d4a017?style=flat-square&color=d4a017) | `--warn` | `#d4a017` | `#8a6100` | ![](https://img.shields.io/badge/-8a6100?style=flat-square&color=8a6100) |
 
 <details>
-<summary><b>+8 more tokens</b></summary>
+<summary><b>More tokens</b></summary>
 
-`--surface-2` `--border` `--text` `--muted` `--accent-soft` `--accent-dim` `--row` `--code`
-Non-colour: `--radius` `8px` · `--maxw` `72rem` · `--font` · `--font-serif` · `--mono`
+`--surface-2` `--border` `--text` `--muted` `--accent-soft` `--accent-dim` `--good-dim` `--warn-dim` `--hook-dim` `--row` `--code`  
+Non-colour: `--radius` `--maxw` `--sticky` `--font` `--font-serif` `--mono`
 
 </details>
 
@@ -87,31 +90,31 @@ Non-colour: `--radius` `8px` · `--maxw` `72rem` · `--font` · `--font-serif` �
 
 ```mermaid
 flowchart LR
-  A["theme.css<br/>:root<br/>dark"] --> B["theme.css<br/>light override"] --> C["topic.css<br/>accent"] --> D["✨ var(--token)"]
+  A["theme.css dark"] --> B["theme.css light"] --> C["topic.css accent"] --> D["var token paint"]
   classDef s fill:#1f1e1c,stroke:#d97757,color:#faf9f5
-  classDef o fill:#d97757,stroke:#faf9f5,color:#141413,font-weight:bold
+  classDef o fill:#d97757,stroke:#faf9f5,color:#141413
   class A,B,C s
   class D o
 ```
 
-`theme.js` runs in `<head>` **before** the stylesheets, with no `defer` — it sets `data-theme` pre-paint, so a saved light theme never flashes dark. Key: `dls-theme`.
+`theme.js` runs in `<head>` before stylesheets. It sets `data-theme` before paint, reads only `dls-theme`, and syncs the toggle label plus `aria-pressed`.
 
 > [!NOTE]
-> `localStorage` over `file://` is browser-policy dependent. The toggle always works on the current page; persistence across navigation is not guaranteed. Blocked storage falls back to dark, silently.
+> `localStorage` is scoped by file URL. Theme choice will often **not persist across pages** opened directly from `file://`; current-page toggle still works. Blocked storage falls back to dark.
+
+Paper-first print mode switches to white backgrounds, readable dark text, print-safe borders, visible underlined links, and hidden navigation controls. Reduced-motion users get instant anchor scrolling.
 
 ---
 
-## 📄 Page contract
+## ♿ Accessibility and static rules
 
-Three lines replaced a 107-line inline stylesheet:
-
-```html
-<script src="../../assets/theme.js"></script>
-<link rel="stylesheet" href="../../assets/theme.css">
-<link rel="stylesheet" href="topic.css">
-```
-
-🔒 Script first → no flash · `topic.css` last → accent wins · `../../` never `/` → `file://` safe
+- Skip link is first body child and targets `<main id="main">`.
+- `:focus-visible` gives keyboard users a visible accent outline.
+- Filter has a real label, live match status, and visible empty state.
+- Table header cells use `scope="col"`; informative diagrams use `role="img"` plus `aria-label`.
+- Prose measure is capped; links are underlined instead of colour-only.
+- No remote assets, build step, server, `fetch()`, or ES modules.
+- Source markup remains ASCII-only. Mermaid fences below use ASCII only.
 
 ---
 
@@ -119,14 +122,14 @@ Three lines replaced a 107-line inline stylesheet:
 
 ```mermaid
 flowchart LR
-  A["1️⃣ topics/slug/"] --> B["2️⃣ topic.css<br/>3 colours"] --> C["3️⃣ pages"] --> D["4️⃣ one card<br/>in launcher"] --> E["✅ done"]
+  A["1 create topics/slug"] --> B["2 add topic.css"] --> C["3 add pages"] --> D["4 add launcher card"] --> E["5 add registry metadata"] --> F["6 run verifier"]
   classDef s fill:#1f1e1c,stroke:#d4a27f,color:#faf9f5
-  classDef d fill:#5db872,stroke:#faf9f5,color:#141413,font-weight:bold
-  class A,B,C,D s
-  class E d
+  classDef d fill:#5db872,stroke:#faf9f5,color:#141413
+  class A,B,C,D,E s
+  class F d
 ```
 
-Platform files stay untouched. A topic's entire identity is ten lines:
+Platform CSS and JavaScript stay shared. One intentional manual platform edit remains: add topic card to root launcher. `assets/registry.js` is author-side single source of truth; readers never need to load it.
 
 ```css
 :root { --accent: #d97757; --accent-soft: #d4a27f; --accent-dim: rgba(217,119,87,.10); }
@@ -146,34 +149,35 @@ Platform files stay untouched. A topic's entire identity is ten lines:
 
 | # | Chapter | Domain |
 |:--|:--|:--|
-| 01 | Cloud computing | ☁️ Concepts · 25-30% |
-| 02 | Benefits of cloud services | ☁️ Concepts · 25-30% |
-| 03 | Cloud service types | ☁️ Concepts · 25-30% |
-| 04 | Core architectural components | 🏛️ Architecture · 35-40% |
-| 05 | Compute and networking | 🏛️ Architecture · 35-40% |
-| 06 | Storage services | 🏛️ Architecture · 35-40% |
-| 07 | Identity, access, security | 🏛️ Architecture · 35-40% |
-| 08 | Cost management | 🛡️ Governance · 30-35% |
-| 09 | Governance and compliance | 🛡️ Governance · 30-35% |
-| 10 | Managing and deploying resources | 🛡️ Governance · 30-35% |
-| 11 | Monitoring tools | 🛡️ Governance · 30-35% |
+| 01 | Cloud computing | Concepts · 25-30% |
+| 02 | Benefits of cloud services | Concepts · 25-30% |
+| 03 | Cloud service types | Concepts · 25-30% |
+| 04 | Core architectural components | Architecture · 35-40% |
+| 05 | Compute and networking | Architecture · 35-40% |
+| 06 | Storage services | Architecture · 35-40% |
+| 07 | Identity, access, security | Architecture · 35-40% |
+| 08 | Cost management | Governance · 30-35% |
+| 09 | Governance and compliance | Governance · 30-35% |
+| 10 | Managing and deploying resources | Governance · 30-35% |
+| 11 | Monitoring tools | Governance · 30-35% |
 
-Each page ships diagrams, comparison tables, confusion callouts, MCQs and active recall. The hub adds a live filter and a cross-chapter confusion index.
+Each page ships diagrams, comparison tables, callouts, MCQs, and active recall. Hub adds live filtering and confusion index.
 
 </details>
 
 ---
 
-## 📐 Rules
+## 📐 Guardrails
 
-| ❌ Never | 💥 Because |
+| Never | Because |
 |:--|:--|
-| Build step or server | Must open years from now, toolchain-free |
-| Remote asset or web font | Works with the network off |
-| Non-ASCII byte in markup | Mojibake under `file://` — use `&mdash;` `&middot;` |
-| `/assets/...` path | Resolves to filesystem root under `file://` |
-| Colour outside `:root` | Would break one of the two themes |
-| CSS inside a page | The exact problem this repo killed |
+| Build step or server | Notes must open years from now |
+| Remote asset or web font | Works with network off |
+| Non-ASCII markup byte | Use HTML entities for punctuation |
+| `/assets/...` path | Fails under direct `file://` opening |
+| Colour outside token blocks | Breaks theme ownership |
+| CSS inside page | Shared theme stays one source |
+| Runtime registry dependency | Readers must not need JavaScript |
 
 ---
 
@@ -184,19 +188,20 @@ Each page ships diagrams, comparison tables, confusion callouts, MCQs and active
 | | Before | After |
 |:--|:--:|:--:|
 | Stylesheet copies | `12` | **`1`** |
-| Page weight | `399 KB` | **`303 KB`** |
-| Files to change a colour | `12` | **`1`** |
 | Inline theme scripts | `13` | **`0`** |
-| Topics supported | `1` hardcoded | **`N`** drop-in |
+| Topics supported | `1 hardcoded` | **`N` drop-in** |
+| Drift checks | `manual` | **`tools/verify.ps1`** |
+| Accessibility shell | `partial` | **skip, focus, labels, roles** |
 
 </div>
 
 <details>
-<summary><b>🔍 Verification</b> — all static checks passed</summary>
+<summary><b>🔍 Verification</b> — static checks
+</summary>
 
-`<style>` tags: **0** · retired `az900-theme` key: **0** · asset refs correct: **36/36** · `defer`/`async`: **0** · missing selectors: **0** · dead links or anchors: **0** · non-ASCII bytes: **0** · remote assets: **0** · toggle hooks: **13/13** · source folder modified: **no**
+`tools/verify.ps1` parses registry text without Node. It checks chapter parity, Prev/Next chain, launcher and hub targets, same-file anchors, skip/main contract, shared assets, remote assets, style tags, retired keys, root-relative paths, and non-ASCII HTML bytes. It exits non-zero on any failure.
 
-Needs a human eye: rendered dark/light appearance, and whether the theme sticks across pages in your browser.
+Needs a human eye: rendered dark/light appearance and browser-specific persistence across standalone file URLs.
 
 </details>
 
@@ -204,15 +209,15 @@ Needs a human eye: rendered dark/light appearance, and whether the theme sticks 
 
 ## ♻️ Rollback
 
-The original flat folder was **copied, never moved**. It sits outside this repo, unmodified.
+Original flat folder was copied, never moved. It sits outside repo, unmodified.
 
-`git restore <path>` → one file · `git revert <sha>` → one commit · recopy → everything
+`git restore <path>` restores one file · `git revert <sha>` reverts one commit · recopy restores everything
 
 ---
 
 <div align="center">
 
-**Built to still work in ten years.**
+**Built to still work in ten years.**  
 No framework · no bundler · no CDN · no lock file
 
 </div>

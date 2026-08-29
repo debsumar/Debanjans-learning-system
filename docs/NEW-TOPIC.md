@@ -1,13 +1,24 @@
 # Add a topic
 
-Use this runbook to add one self-contained topic without duplicating platform CSS.
+Use this runbook to add one self-contained topic without duplicating platform CSS. Adding topic costs one folder plus one intentional manual launcher edit; platform CSS and JavaScript stay unchanged.
 
 1. Create `topics/<slug>/`.
-2. Create `topics/<slug>/topic.css` with only dark and light accent token overrides. Do not add layout or component rules.
-3. Create `topics/<slug>/index.html` as the topic hub.
-4. Create chapter pages using the documented depth-2 head block and `.top-links` navigation below.
-5. Add one card to the root `index.html`. Copy the existing card, update title, description, link, and pills.
-6. Keep every page ASCII-only. Use HTML entities for non-ASCII punctuation.
+2. Create `topics/<slug>/topic.css` with only dark/light accent token overrides. A leading comment is allowed; no layout or component rules.
+3. Create `topics/<slug>/index.html` as topic hub.
+4. Create chapter pages using depth-2 head block and top-bar navigation below.
+5. Add one card to root `index.html`. This is the intentional manual platform exception: launcher must expose topic, while shared platform files stay untouched.
+6. Add topic and ordered chapter metadata to `assets/registry.js`. Record real page counts, filenames, titles, domains, weights, hub path, accent tokens, description, and pill labels.
+7. Check every page is ASCII-only. Use HTML entities for punctuation.
+8. Run `tools/verify.ps1`. Fix every FAIL before handoff.
+9. Open root, hub, and chapter files directly from disk. Check dark/light rendering, labels, focus, anchors, and navigation.
+
+## Ownership boundary
+
+Platform-owned shell: shared `.top` structure, `.top-inner`, `.top-links`, Home destination, theme toggle markup/behavior, skip link, `main#main`, shared asset references, and component classes. Root platform site text is `Debanjan&rsquo;s Learning System`.
+
+Topic-owned shell text: topic title, description, pills, hub link label, chapter title, and chapter Prev/Next targets. Shipped AZ-900 chapter pages use `AZ-900 Notes` as `.site` text and `AZ-900` as hub link text. Do not copy the old `Debanjan&rsquo;s Learning System` / `Topic hub` wording into a topic chapter block.
+
+`assets/registry.js` is author-owned metadata, not page runtime code. `tools/verify.ps1` is author tooling, not reader code. Readers need neither file to read notes.
 
 ## Topic-page head block
 
@@ -26,28 +37,31 @@ Copy exactly for pages inside `topics/<slug>/`:
 </head>
 ```
 
-Do not add inline `<style>`, inline theme JavaScript, `@font-face`, remote assets, or root-relative `/assets/...` paths.
+No inline `<style>`, inline theme JavaScript, `@font-face`, remote assets, or root-relative `/assets/...` paths.
 
 ## Depth-2 top-links block
 
-Use relative links from a chapter page or hub at `topics/<slug>/` depth:
+Use relative links from chapter page or hub at `topics/<slug>/` depth. Replace topic-specific and chapter-specific placeholders; keep platform shell and toggle markup:
 
 ```html
-<div class="top"><div class="top-inner"><div class="site">Debanjan&rsquo;s Learning System</div><div class="top-links"><a href="../../index.html">Home</a><a href="index.html">Topic hub</a><a href="[previous-file]">&larr; Prev</a><a href="[next-file]">Next &rarr;</a><button type="button" class="theme-toggle" id="theme-toggle" title="Switch between dark and light theme"><svg class="icon icon-moon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><svg class="icon icon-sun" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4.2V2.5M12 21.5v-1.7M4.2 12H2.5M21.5 12h-1.7M6.5 6.5 5.3 5.3M18.7 18.7l-1.2-1.2M6.5 17.5l-1.2 1.2M18.7 5.3l-1.2 1.2M12 7.8a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4Z"/></svg><span class="theme-label">Dark</span></button></div></div></div>
+<div class="top"><div class="top-inner"><div class="site">AZ-900 Notes</div><div class="top-links"><a href="../../index.html">Home</a><a href="index.html">AZ-900</a><a href="[previous-file]">&larr; Prev</a><a href="[next-file]">Next &rarr;</a><button type="button" class="theme-toggle" id="theme-toggle" title="Switch between dark and light theme"><svg class="icon icon-moon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><svg class="icon icon-sun" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4.2V2.5M12 21.5v-1.7M4.2 12H2.5M21.5 12h-1.7M6.5 6.5 5.3 5.3M18.7 18.7l-1.2-1.2M6.5 17.5l-1.2 1.2M18.7 5.3l-1.2 1.2M12 7.8a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0-0 8.4Z"/></svg><span class="theme-label">Dark</span></button></div></div></div>
 ```
 
-For the first chapter, link `Prev` to `index.html` or omit it according to the topic navigation design. For the final chapter, omit `Next` or link it to the hub. Keep all chapter links valid.
+The exact shipped AZ-900 toggle SVG may be copied from an existing page. First chapter Prev points to `index.html`; final chapter Next points to `index.html`. Intermediate links follow registry order.
 
 ## Verification checklist
 
-Before handoff, open pages directly from disk and verify:
+Before handoff:
 
-- Dark theme loads; light theme loads; toggle label and persistence work.
-- Every page has a working `Home` link to `../../index.html`.
-- Every chapter has a working `Topic hub` link to `index.html`.
-- Prev/next chain has no broken links and correct first/last behavior.
+- Dark theme loads; light theme loads; toggle label and `aria-pressed` update.
+- Expect localStorage persistence to be unreliable across standalone `file://` page URLs; current-page theme still works.
+- Every page has skip link first in body and `<main id="main">`.
+- Every chapter has Home to `../../index.html` and hub link to `index.html`.
+- Prev/Next chain has no broken links and correct hub endpoints.
 - Every TOC link reaches an existing section anchor.
-- All pages use `../../assets/theme.js`, `../../assets/theme.css`, and `topic.css`.
-- No page duplicates shared CSS.
-- ASCII scan passes for every new file; HTML punctuation uses entities.
-- No `@font-face`, remote asset, or `/assets/...` path appears.
+- Pages use `../../assets/theme.js`, `../../assets/theme.css`, and `topic.css`.
+- No page duplicates shared CSS or adds `<style>`.
+- Informative diagrams have `role="img"` and `aria-label`; table header cells use `scope="col"`.
+- ASCII scan passes; punctuation uses entities; no `@font-face`, remote asset, or `/assets/...` path.
+- `assets/registry.js` lists every chapter in order with real metadata.
+- `tools/verify.ps1` returns PASS and zero failures.

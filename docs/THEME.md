@@ -1,14 +1,16 @@
 # Shared platform theme
 
-Platform contract for standalone certification and topic note sets. Pages run from local `file://` URLs; no web server is required.
+Platform contract for standalone certification and topic note sets. Pages run directly from local `file://` URLs; no web server is required.
 
 ## Directory layout
 
 ```text
 index.html                 root launcher
-assets/theme.css            shared layout, component, and token CSS
+assets/theme.css            shared layout, components, and tokens
 assets/theme.js             shared theme boot and toggle
-docs/THEME.md              this platform specification
+assets/registry.js          author-side metadata source; never required by readers
+tools/verify.ps1            author-side drift checker; never required by readers
+docs/THEME.md               this platform specification
 docs/NEW-TOPIC.md           topic creation runbook
 topics/<slug>/              one self-contained topic
   index.html                topic hub
@@ -16,11 +18,11 @@ topics/<slug>/              one self-contained topic
   <chapter>.html            chapter pages
 ```
 
-Do not add a second copy of shared CSS to any page. `assets/theme.css` is the only shared stylesheet.
+Do not add a second copy of shared CSS to any page. `assets/theme.css` is the only shared stylesheet. `assets/registry.js` is authoritative metadata for tooling and future generation; static pages do not load it at runtime. Run `tools/verify.ps1` after metadata or page changes.
 
 ## Required head blocks
 
-Every document starts with `<!doctype html>` and uses `<html lang="en" data-theme="dark">`. Head children must appear in this exact order. The root launcher uses root-relative-to-document paths:
+Every document starts with `<!doctype html>` and uses `<html lang="en" data-theme="dark">`. Head children appear in this order. Root launcher paths are:
 
 ```html
 <head>
@@ -32,7 +34,7 @@ Every document starts with `<!doctype html>` and uses `<html lang="en" data-them
 </head>
 ```
 
-A topic page is at depth 2 under `topics/<slug>/`, so it uses these exact paths. Keep `topic.css` after shared CSS so identity overrides win:
+A topic page is at depth 2 under `topics/<slug>/`:
 
 ```html
 <head>
@@ -45,15 +47,39 @@ A topic page is at depth 2 under `topics/<slug>/`, so it uses these exact paths.
 </head>
 ```
 
-Do not use `/assets/...` paths. Root-relative URLs begin at a server origin and fail for direct `file://` opening. Use the relative paths above.
+No `/assets/...` paths. Root-relative URLs fail when pages open directly from `file://`.
+
+## Accessibility and shell contract
+
+Every page puts this exact link as first `<body>` child:
+
+```html
+<a class="skip" href="#main">Skip to content</a>
+```
+
+`<main id="main">` is required. Shared `:focus-visible` uses a 2px accent outline, 2px offset, and 3px radius. Informative inline diagrams use `role="img"` and a useful `aria-label`; decorative SVGs use `aria-hidden="true"` and `focusable="false"`. Header-row table cells use `scope="col"`; row headers use `scope="row"`.
+
+Use existing shell classes: `.top`, `.top-inner`, `.site`, `.top-links`, `.wrap`, `header.head`, `.pills`, `.pill`, `nav.toc`, `section.card`, `.grid`, `.grid > .card`, `.foot`, `.theme-toggle`, `.theme-label`, `.icon`, and `.card-icon`. Keep toggle last in `.top-links`. Grid cards are flex columns with `padding: 16px`; their direct link is flexible, and direct child `.pills` uses `margin-top: auto; padding-top: 10px` for bottom alignment. Links in prose retain underlines; colour is not sole link indication. Controls meet shipped 24px minimum tap-target sizing.
 
 ## Theme behavior
 
-Dark is the default. `assets/theme.js` synchronously reads localStorage key `dls-theme`, accepts only `light` or `dark`, and sets `data-theme` on `document.documentElement`. Storage failures degrade silently to dark. The script binds `#theme-toggle` after DOM readiness, flips the theme, persists the accepted value, and updates `.theme-label` to `Light` or `Dark`.
+Dark is default. `assets/theme.js` synchronously reads localStorage key `dls-theme`, accepts only `light` or `dark`, sets `data-theme` before paint, and syncs the toggle label and `aria-pressed`. Storage errors fall back silently. LocalStorage is scoped by file URL in browsers, so theme choice will often NOT persist from one standalone page URL to another.
+
+Verified `file://` constraints: local JSON `fetch()` is CORS-blocked in Chrome, Edge, and Firefox; `<script type="module">` also fails for this offline use. Do not depend on either. Classic scripts work. Readers must be able to read notes with JavaScript disabled.
+
+`--sticky: 92px` is shared token. All `[id]` targets use `scroll-margin-top: var(--sticky)`; `h2` follows same offset convention. Reduced motion overrides smooth scrolling:
+
+```css
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+[id] { scroll-margin-top: var(--sticky); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+```
+
+Print is paper-first: print tokens use white backgrounds, dark readable text, print-safe borders, hidden navigation/toggle/skip UI, transparent cards, no dark theme, and visible underlined links. Tables lose the screen minimum width and overflow wrapper.
 
 ## Token contract
 
-`assets/theme.css` defines both complete root token blocks: `:root` for dark and `:root[data-theme="light"]` for light. Keep token names unchanged.
+`assets/theme.css` defines complete dark and light root token blocks. Keep token names unchanged.
 
 | Token | Meaning |
 | --- | --- |
@@ -63,61 +89,33 @@ Dark is the default. `assets/theme.js` synchronously reads localStorage key `dls
 | `--border` | borders and separators |
 | `--text` | primary text |
 | `--muted` | secondary text |
-| `--accent` | primary identity and link color |
+| `--accent` | identity and link color |
 | `--accent-soft` | softer identity color |
-| `--accent-dim` | translucent identity background |
+| `--accent-dim` | identity tint |
 | `--good` | positive callout color |
 | `--warn` | warning callout color |
+| `--good-dim` | positive callout tint |
+| `--warn-dim` | warning callout tint |
+| `--hook-dim` | memory-hook callout tint |
 | `--row` | alternating table-row background |
 | `--code` | code background |
 | `--radius` | shared corner radius |
 | `--maxw` | shared content max width |
+| `--sticky` | sticky bar and target offset, `92px` |
 | `--font` | UI and heading font stack |
 | `--font-serif` | reading-text font stack |
 | `--mono` | code font stack |
 
-Colour literals may appear only inside the two `:root` blocks in `assets/theme.css` or inside a topic CSS override. A topic `topic.css` may contain only `:root` and `:root[data-theme="light"]` token overrides, normally changing `--accent`, `--accent-soft`, and `--accent-dim`. It must contain no layout rules, component selectors, or media queries. New topics change those identity values to get their own look; shared structure stays in `assets/theme.css`.
+Callouts use `.cal` plus `.confuse`, `.clue`, or `.hook`; each variant changes border, label, and tint so meaning is not colour-only. Reading prose inside cards is capped at `72ch`.
 
-## Shell class contract
+Colour literals belong in root token blocks or a topic token override. A topic `topic.css` may contain a leading comment, `:root`, and `:root[data-theme="light"]` token overrides. It must not contain layout rules, component selectors, or media queries.
 
-Use existing shared shell classes. Do not invent parallel layout classes.
+## Relative assets and static rules
 
-- `.top`, `.top-inner`, `.site`, `.top-links`: sticky top bar, site label, navigation, and toggle.
-- `.wrap`: centered content wrapper.
-- `header.head`: page title block containing `h1`, `p.kicker`, and `.pills`.
-- `.pills`, `.pill`: compact metadata groups and labels.
-- `nav.toc`: in-page table of contents links.
-- `section.card`: content surface.
-- `.grid`: responsive card grid.
-- `.grid > .card`: grid item; its link wraps `h3` and `p`.
-- `.foot`: footer line.
-- `.theme-toggle`, `.theme-label`: shared theme control.
-- `.icon`, `.card-icon`: inline decorative icon sizing and paint.
+No `@font-face`, remote stylesheet, remote script, remote image, or other remote asset. Font stacks fall back locally. Source files stay ASCII-only; HTML encodes punctuation with entities such as `&mdash;`, `&ndash;`, `&middot;`, `&larr;`, and `&rarr;`. No inline `<style>` blocks. `assets/registry.js` may be loaded only as a future classic script feature, never required for page reading.
 
-Keep the toggle as the last useful control in `.top-links`. Decorative SVGs use `aria-hidden="true"` and `focusable="false"`. Inline SVG paint must use `currentColor` or semantic `var(--token)` values; do not add literal color values to SVG markup.
+## Registry and verification
 
-## Text and asset rules
+`assets/registry.js` is one IIFE assigning `window.LEARNING_SYSTEM`. It stores platform name/version, `dls-theme`, sticky/depth conventions, and ordered topic/chapter metadata including page counts, files, titles, domains, weights, accents, pills, and hub paths. It is author-side single source of truth, not a runtime dependency.
 
-All source files must be ASCII-only. In HTML, encode non-ASCII punctuation and symbols with entities such as `&mdash;`, `&ndash;`, `&middot;`, `&larr;`, `&rarr;`, `&times;`, `&hellip;`, and named or numeric entities as needed. Do not paste Unicode punctuation into HTML.
-
-No `@font-face`, remote stylesheet, remote script, remote image, or other remote asset. Font stacks in the shared CSS fall back to local system fonts. Keep links and assets usable when a page is opened directly from disk.
-
-## Reusable icon SVG library
-
-Use one decorative icon before each owned-file `h2`, or reuse an icon in a launcher card. Keep square `viewBox`, `em` sizing, `currentColor` stroke, `aria-hidden="true"`, and `focusable="false"`.
-
-```html
-<svg class="icon icon-cloud" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="M7.5 18.5h9a4 4 0 0 0 .7-7.94A6 6 0 0 0 5.6 9.9 3.5 3.5 0 0 0 7.5 18.5Z"/></svg>
-<svg class="icon icon-list" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
-<svg class="icon icon-layers" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="m4 8 8-4 8 4-8 4-8-4Zm0 4 8 4 8-4M4 16l8 4 8-4"/></svg>
-<svg class="icon icon-shield" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="M12 3 19 6v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
-<svg class="icon icon-database" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v7c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 12v7c0 1.7 3.1 3 7 3s7-1.3 7-3v-7"/></svg>
-<svg class="icon icon-network" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="m11 7-5 9m7-9 5 9M7 18h10"/></svg>
-<svg class="icon icon-coin" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.5-.7-1.3-1-2.5-1-1.4 0-2.5.7-2.5 1.8 0 2.7 5 1.1 5 3.8 0 1.1-1 1.9-2.5 1.9-1.2 0-2.1-.4-2.7-1.1M12 7v10"/></svg>
-<svg class="icon icon-scales" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="M12 4v16M6 20h12M4 7h16M6 7l-3 6a3 3 0 0 0 6 0L6 7Zm12 0-3 6a3 3 0 0 0 6 0l-3-6Z"/></svg>
-<svg class="icon icon-terminal" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m5 0h5"/></svg>
-<svg class="icon icon-chart" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="M4 19V5M4 19h16M7 16l3-4 3 2 5-7"/></svg>
-<svg class="icon icon-question" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 3.9 1.9c-1 .8-1.6 1.2-1.6 2.6M12 17h.01"/></svg>
-<svg class="icon icon-brain" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3m6-16a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3M9 4v16m6-16v16M9 8h2m2 0h2M9 14h2m2 0h2"/></svg>
-<svg class="icon icon-leaf" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><path d="M19 4C9 4 5 8 5 14c0 3 2 5 5 5 6 0 10-5 9-15Z"/><path d="M5 19c2-4 5-7 10-9"/></svg>
-```
+`tools/verify.ps1` extracts registry metadata text and validates registry JavaScript syntax with Node when available. It checks registry/disk chapter parity, navigation chain, exact launcher and hub href order, static HTML restrictions, same-file anchors, skip/main contracts, and shared asset references. It prints PASS/FAIL counts and exits non-zero on any failure.

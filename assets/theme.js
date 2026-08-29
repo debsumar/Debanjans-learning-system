@@ -1,3 +1,4 @@
+/* File URLs have separate localStorage objects, so theme persistence across pages is not guaranteed. */
 (function(){
   var root = document.documentElement;
   var theme = 'dark';
@@ -11,7 +12,9 @@
     if (!button) return;
     var label = button.querySelector('.theme-label');
     function syncLabel() {
-      if (label) label.textContent = root.getAttribute('data-theme') === 'light' ? 'Light' : 'Dark';
+      var isLight = root.getAttribute('data-theme') === 'light';
+      if (label) label.textContent = isLight ? 'Light' : 'Dark';
+      button.setAttribute('aria-pressed', isLight ? 'true' : 'false');
     }
     syncLabel();
     button.addEventListener('click', function(){
