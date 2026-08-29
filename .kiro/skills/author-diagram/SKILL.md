@@ -6,6 +6,47 @@ description: Author verified SVG diagrams from registered archetypes; geometry, 
 
 Use this runbook for `$ARGUMENTS`.
 
+## Decision rule: model, not hand-drawn SVG
+
+If the concept is about OUTCOMES UNDER A CONDITION - what survives a failure, what inherits,
+or what is protected - do NOT hand-draw an SVG. Use an interactive model matrix instead. A
+static diagram shows structure; it cannot show propagation.
+
+Shipped examples:
+
+- `storage-redundancy` in `topics/az-900/06-storage.html#redundancy`.
+- `vm-resilience` in `topics/az-900/05-compute-networking.html#hosting`.
+- `governance-inheritance` in `topics/az-900/09-governance-compliance.html#discrimination`.
+
+Use this exact shape: a `div.model` with `data-model`, `data-model-rows`, and
+`data-model-cols`, wrapping `div.tw` and `table.t.model-matrix`. Header scenarios use
+`th[scope=col]`; option labels use `th[scope=row]`:
+
+```html
+<div class="model" data-model="..." data-model-rows="..." data-model-cols="...">
+  <div class="tw"><table class="t model-matrix">
+    <thead><tr><th scope="col">Option</th><th scope="col">Scenario</th></tr></thead>
+    <tbody><tr><th scope="row">Choice</th><td>Decisive outcome</td></tr></tbody>
+  </table></div>
+</div>
+```
+
+Matrix invariants:
+
+- Matrix is the SINGLE SOURCE OF TRUTH. `model.js` hardcodes no domain facts. Verifier
+  asserts `model.js` contains none of the matrix outcome strings.
+- Matrix must be rectangular: every option row has one cell per scenario column.
+- Use 2-5 distinct, non-empty outcome values.
+- Reuse identical wording for identical outcomes. Prediction controls group by exact text.
+- Table is never hidden. It stays fully readable with JavaScript disabled.
+- `model.js` loads trailing and AFTER `study.js`, and only on pages that have a model.
+
+Hard warning: every cell must be DECISIVE. Filler such as `Not stated` is worse than useless:
+it becomes a meaningless prediction option. A factually wrong cell teaches the opposite truth.
+One generated matrix in this repo claimed a zone-spanning scale set was unprotected against
+zone failure and had to be rebuilt by hand. If chapter text does not support a cell, change
+the scenario column or drop the row - never guess and never leave filler.
+
 ## Why this skill exists
 
 Six hand-authored diagrams shipped broken: arrows pointed 64 units into empty space, connectors crossed unrelated boxes, overlapping segments doubled arrowheads, and eight labels lacked `text-anchor="middle"` and overflowed boxes.

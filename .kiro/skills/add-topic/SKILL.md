@@ -1,126 +1,155 @@
 ---
 name: add-topic
-description: Add certification topics with registry-first objectives, static chapter pages, study markers, diagrams, questions, and verifier checks.
+description: Add certification topics with registry-first objectives, static pages, study markers, diagrams, models, and verifier checks.
 ---
 # Add a certification topic
 
-Use this skill for `$ARGUMENTS`. Treat `$ARGUMENTS` as certification being added, for example `AWS Cloud Practitioner`.
+Use this skill for `$ARGUMENTS`. Example: `AWS Cloud Practitioner`.
 
 ## Non-negotiable ownership
 
 - Create one self-contained folder: `topics/<slug>/`.
-- Include `topic.css`, `index.html` hub, numbered chapter pages, `review.html`, and `glossary.html`.
-- `assets/theme.css` and `assets/theme.js` are platform-owned. NEVER edit them for a new topic.
-- Topic visual identity lives only in three accent token pairs in `topic.css`:
-  `--accent`, `--accent-soft`, and `--accent-dim` in dark and light `:root` blocks.
-- `topic.css` may have a leading comment and those token overrides only. No layout, component selectors, or media queries.
-- One intentional manual platform exception: add the topic card to root `index.html`.
-- Do not duplicate shared CSS. No build step, framework, or npm.
+- Include `topic.css`, `index.html`, numbered chapter pages, `review.html`, and `glossary.html`.
+- `assets/theme.css` and `assets/theme.js` are platform-owned. Do not edit them for a topic.
+- `topic.css` may contain only a leading comment and dark/light `:root` token overrides for `--accent`, `--accent-soft`, and `--accent-dim`.
+- No duplicated shared CSS, build step, framework, npm, inline `<style>`, or remote asset.
+- One intentional manual exception: add the topic card to root `index.html`.
 
-## Required page shell
+## Asset scripts
 
-Every topic document starts with `<!doctype html>` and `<html lang="en" data-theme="dark">`.
-A depth-2 page under `topics/<slug>/` uses this exact head block:
+- `assets/theme.js`: load in `<head>`, before stylesheets, as a classic script with no `defer`; synchronously set `data-theme` before paint and bind the toggle.
+- `assets/study.js`: load trailing, immediately before `</body>` on study pages; optional classic progressive enhancement for recall/MCQ state, confidence, grading, and study briefs.
+- `assets/model.js`: load trailing, after `assets/study.js`, only on pages containing a model; optional classic enhancement of a static matrix.
+- `assets/registry.js`: load by NO page. Author-side data only; `assets/study.js` is its sole shipped runtime consumer.
+- No module scripts, `import`, or fetch-based runtime dependencies: pages must work from `file://` with JavaScript disabled.
+
+## Registry-first order - do this before prose
+
+1. Read the official exam guide. Record vendor, exam code, display name, date, URL, domains, and weight ranges.
+2. Add the topic and hub path to `assets/registry.js`.
+3. Build the objective registry first. Copy official wording exactly; use stable IDs such as `<exam>-cNN-oM`.
+4. Build the ordered chapter map: real filenames, titles, domains, weights, objective IDs, section IDs, archetypes, and MCQ/recall counts.
+5. Declare the closed section-archetype enum, question schema, counts, diagrams, confusion sets, and study policy.
+6. Only then write chapter, hub, review, glossary, diagram, and question HTML. Pages reference registry IDs; they do not invent them.
+7. Registry is single most important sequencing rule. It prevents page prose from silently creating drift.
+
+## Per-page head and shell
+
+Every page starts with `<!doctype html>` and `<html lang="en" data-theme="dark">`. Every head has exactly one non-empty, page-specific description and one offline SVG favicon. Shipped order is charset, viewport, description, title, favicon, `theme.js`, then stylesheets:
 
 ```html
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>[Topic page title]</title>
+<meta name="description" content="One ASCII sentence describing this page.">
+<title>Topic page title &middot; Notes</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d97757' d='M2 4l6-2 6 2-6 2Zm0 3 6 2 6-2v3l-6 2-6-2V7Z'/%3E%3C/svg%3E">
 <script src="../../assets/theme.js"></script>
 <link rel="stylesheet" href="../../assets/theme.css">
 <link rel="stylesheet" href="topic.css">
 </head>
 ```
 
-`../../assets/theme.js` is a classic script and comes before both stylesheets. Use sibling `topic.css`.
-End every study-enabled chapter, hub, and review page with:
+Use `assets/theme.js`, `assets/theme.css` at root depth; use `../../assets/...` under `topics/<slug>/`. Favicon is inline `data:image/svg+xml,`; no binary asset or remote request. Keep descriptions unique across all HTML files.
 
-```html
-<script src="../../assets/study.js"></script>
-```
-
-Keep the script trailing, immediately before `</body>`. The hub and review have one
-`<div id="study-summary"></div>` mount. Study content remains readable with JavaScript disabled.
-
-First body child must be exactly:
+First body child, every page:
 
 ```html
 <a class="skip" href="#main">Skip to content</a>
 ```
 
-Use `<main id="main">`. Use the shipped top bar contract: `.top`, `.top-inner`, `.site`,
-`.top-links`, Home link to `../../index.html`, topic link to `index.html`, chapter Prev/Next
-links, and the theme toggle last. Copy this toggle markup verbatim from `docs/NEW-TOPIC.md`:
+Use `<main id="main">`, shipped `.top`/`.top-inner`/`.site`/`.top-links` shell, relative links, and theme toggle last in `.top-links`. Chapter body carries `data-chapter`, `data-domain`, and `data-weight`.
+
+## Chapter order and required markers
+
+Use this order: `#skills`, body sections, `#mcq`, `#recall`. Each body section uses one registered archetype: `concept`, `process`, `comparison`, `decision`, `worked-scenario`, `callout`, `diagram`, `mcq-set`, or `active-recall`.
 
 ```html
-<button type="button" class="theme-toggle" id="theme-toggle" title="Switch between dark and light theme"><svg class="icon icon-moon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><svg class="icon icon-sun" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4.2V2.5M12 21.5v-1.7M4.2 12H2.5M21.5 12h-1.7M6.5 6.5 5.3 5.3M18.7 18.7l-1.2-1.2M6.5 17.5l-1.2 1.2M18.7 5.3l-1.2 1.2M12 7.8a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0-0 8.4Z"/></svg><span class="theme-label">Dark</span></button>
+<section class="card" id="skills"><h2>Official skills measured</h2><ul><li id="az900-cNN-o1">Official objective text</li></ul></section>
+<details class="more" data-mcq="cNN-q01" data-objective="az900-cNN-o1"><summary>Answer</summary><p>Answer and rationales.</p></details>
+<details class="more recall-item" data-recall="cNN-r01" data-objective="az900-cNN-o1"><summary>Recall prompt?</summary><p>Answer.</p></details>
 ```
 
-## Order of work
+Each MCQ has four answer strings, a key rationale, and one rationale per wrong option. Each recall/MCQ objective value must exist in registry. IDs are unique repository-wide. Every study page has exactly one `<div id="study-summary"></div>` mount and trailing `study.js`.
 
-1. Ingest official exam guide. Fill certification manifest: vendor, exam code, display name,
-   skills-measured date, official guide URL, domains, and weight ranges.
-2. Build objective registry before writing prose. Use stable IDs in the form
-   `<exam>-c<NN>-o<M>`; copy official wording exactly into objective `text`.
-3. Build ordered chapter map: real filenames, titles, domains, weights, objective IDs,
-   section IDs, section archetypes, and practice counts.
-4. Then write chapter, hub, review, glossary, diagram, and question content.
+## Six authored learning components
 
-Registry-first prevents drift: pages reference already-defined IDs, chapters, sections, and
-counts. Verifier checks coverage in both directions, so prose cannot silently create or lose
-objectives.
+### 1. TL;DR summary card
 
-## Chapter contract
+Exactly one per chapter. It is first `<section>` inside `main`; TOC has a pill to `#tldr`. Use 4-6 bullets. Every bullet states a rule plus boundary, condition, exception, or scope.
 
-Every chapter follows this order:
+```html
+<nav class="toc"><a href="#tldr">In one minute</a></nav>
+<main id="main"><section class="card tldr" id="tldr"><h2>In one minute</h2><ul>
+<li>Choose X when condition applies; boundary limits that choice.</li>
+<li>Use Y for this scope; it does not imply Z outside that scope.</li>
+<li>Prefer A under constraint; choose B when constraint changes.</li>
+<li>Rule plus exception, not topic label.</li>
+</ul></section>
+```
 
-`#skills` -> 4 to 6 body sections -> `#mcq` -> `#recall`
+### 2. Misconception closure
 
-Each body section uses one closed section archetype from the registry:
-`concept`, `process`, `comparison`, `decision`, `worked-scenario`, `callout`, `diagram`,
-`mcq-set`, or `active-recall`. Registry `sectionIds` and `sectionArchetypes` must match real
-HTML IDs. Chapter body carries `data-chapter`, `data-domain`, and `data-weight`.
+Use `.cal.myth` for a false inference and correction. Label exactly `Common wrong turn`. Use 2-3 only when warranted, never more than 3 per chapter. `.cal.confuse` is distinct: it states a rule or discriminator.
 
-Required machine-readable markers:
+```html
+<div class="cal myth"><span class="lbl">Common wrong turn</span><p><strong>&ldquo;False belief.&rdquo;</strong> &mdash; Correct boundary or consequence.</p></div>
+<div class="cal confuse"><b class="lbl">Confuse</b>State the actual rule or discriminator.</div>
+```
 
-- Every objective bullet: `<li id="<exam>-cNN-oM">` inside `#skills`.
-- Every answer panel: `data-mcq="cNN-qMM"` and one or more `data-objective` values.
-- Every recall item: `data-recall="cNN-rMM"`.
-- Every study page: one study-summary mount and trailing `../../assets/study.js`.
+### 3. Causal steps
 
-Use four answer strings per MCQ, required key/rationales, and counts declared in registry.
-Keep prose in pages; registry stores contracts and metadata.
+Use `.steps` only where genuine causality or ordered path exists. Native ordered `details`; every `li` has exactly one `details`; first only item is `open`. Chapters 01, 02, and 03 correctly have no `.steps`; omission beats invented process.
 
-## Registry: all seven layers
+```html
+<ol class="steps"><li><details class="more" open><summary>1. Input causes next state.</summary><p>Why this transition occurs.</p></details></li><li><details class="more"><summary>2. Next state produces result.</summary><p>Result and boundary.</p></details></li></ol>
+```
 
-Register topic and hub path in `assets/registry.js`. Fill all seven author-side layers:
+### 4. First-use glossary links
 
-1. certification manifest;
-2. objective registry;
-3. ordered chapter map;
-4. closed section-archetype enum;
-5. question schema and counts;
-6. diagram catalogue, archetypes, uses, and geometry rules;
-7. confusion sets plus study policy.
+Link first substantive prose use only. Never link headings, table headers, `summary`, MCQ stem/option, or TL;DR. Target `glossary.html#g-slug`; slug is `g-` plus lowercase term, with each run of non-alphanumeric characters collapsed to one hyphen and edge hyphens removed.
 
-Use only source-supported confusion sets. Record callout chapter and resolved hub target
-separately. Catalogue every diagram under a real archetype with nodes, labels, edges, groups,
-and checkable geometry rules.
+```html
+<p>A <a href="glossary.html#g-private-endpoint">private endpoint</a> maps a service to a private VNet IP.</p>
+```
 
-## Hard static constraints
+### 5. Recall objective tags
 
-- ASCII-only source. Encode punctuation with HTML entities such as `&mdash;`, `&ndash;`,
-  `&middot;`, `&larr;`, and `&rarr;`.
-- Relative paths only. Root-relative `/assets/...` breaks direct `file://` use.
-- No remote assets, remote stylesheet, remote script, remote image, `@font-face`, inline
-  `<style>`, module scripts, or `import`/fetch runtime dependencies.
-- JavaScript uses ES2026 syntax in CLASSIC scripts only. `import` is CORS-blocked from
-  `file://`; registry remains author-side data, not reader runtime code.
-- Colour literals belong only in root token blocks or topic token override.
-- Pages must remain readable with JavaScript disabled.
+Every chapter recall item carries one or more registry objective IDs in `data-objective`; space-separate multiple IDs. `study.js` uses them for objective weakness reporting.
 
-## Finish
+```html
+<details class="more recall-item" data-recall="c05-r10" data-objective="az900-c05-o6"><summary>What does this provide?</summary><p>Answer.</p></details>
+```
+
+### 6. Interactive model
+
+Optional. Static outcome matrix is single source of truth; `assets/model.js` derives options, scenarios, predictions, and verdicts from it. Registry declares identity and dimensions, never outcome values. Keep table visible; never hide it. Use 2-5 distinct non-empty outcome values.
+
+```html
+<div class="model" data-model="example-id" data-model-rows="Option" data-model-cols="Scenario">
+<div class="tw"><table class="t model-matrix"><thead><tr><th scope="col">Option</th><th scope="col">Scenario A</th><th scope="col">Scenario B</th></tr></thead><tbody>
+<tr><th scope="row">Choice A</th><td>Outcome one</td><td>Outcome two</td></tr>
+<tr><th scope="row">Choice B</th><td>Outcome two</td><td>Outcome one</td></tr>
+</tbody></table></div></div>
+```
+
+Model page ending:
+
+```html
+<script src="../../assets/study.js"></script>
+<script src="../../assets/model.js"></script>
+</body>
+```
+
+Registry also catalogs `study-brief`: this is optional script-derived output, not a replacement for authored static answers. `study.js` renders visible copy controls and textarea; failed clipboard access must not hide it.
+
+## Topic extra pages
+
+`glossary.html` has two sections: a terms `dl`, then a separate `Discriminators` `dl` for `X vs Y` contrasts. Give every `dt` canonical `id="g-..."`. Include a labelled filter, such as `<label for="filter">Filter glossary terms</label>`, plus a live `role="status"` region.
+
+`review.html` includes an interleaved discrimination drill, cross-chapter scenarios, and a weight-aware plan. Keep review recall IDs `rev-dNN` or `rev-sNN`; review items are not chapter objective coverage.
+
+## Verification gate
 
 Run from repository root:
 
@@ -128,7 +157,8 @@ Run from repository root:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify.ps1
 ```
 
-Require exit code 0 and zero failures. Fix every FAIL. Check direct `file://` opening,
-anchors, Prev/Next chain, dark/light/print rendering, keyboard focus, diagrams, and answer
-readability. Commit only after verification passes and human review covers facts, keys,
-rationales, and visual teaching value.
+`tools\verify.ps1` has 33 normal Add-Check gates. Require exit code 0 and zero failures before committing. Gate enforces objective coverage both directions, cross-file glossary anchors, recall/MCQ integrity, steps and model contracts, favicon and unique descriptions, and progressive enhancement, plus registry/disk parity, navigation, diagrams, static restrictions, and classic scripts. Conditional SKIP lines are informational; never ignore FAIL.
+
+## Finish
+
+Check all cited paths, IDs, classes, counts, anchors, and chapter links against shipped files. Open pages directly via `file://`; verify dark/light/print rendering, keyboard focus, visible matrices, and answer readability with JavaScript disabled. Human-review facts, answer keys, rationales, glossary first-use choice, and component teaching quality. Commit only after verifier passes.

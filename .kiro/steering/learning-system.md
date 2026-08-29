@@ -18,6 +18,10 @@ Detailed runbooks: `/add-topic`, `/author-page`, `/author-diagram`,
 - `localStorage` is per-file-URL when pages open from disk.
 - Study and theme state therefore do not follow readers across disk pages.
 - State works across pages on hosted GitHub Pages.
+- Authored components are declared in `assets/registry.js` and enforced by `tools\verify.ps1`.
+- `assets/registry.js` is author-side data; no page loads it.
+- `assets/model.js` loads after `assets/study.js`, only on model pages.
+- Static `table.model-matrix` is source of truth; model harness derives interaction from it.
 
 Steering is always in context. Skills load on demand as slash commands.
 
