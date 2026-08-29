@@ -51,7 +51,7 @@ Use definition recall only for atomic facts that still need memorizing. Raise Bl
 Create exactly one recall item per question:
 
 ```html
-<details class="more recall-item" data-recall="cNN-rMM">
+<details class="more recall-item" data-recall="cNN-rMM" data-objective="az900-cNN-oM">
   <summary>Question before answer</summary>
   <p>Answer in body.</p>
 </details>
@@ -123,3 +123,14 @@ pwsh -File tools\verify.ps1
 Require `PASS` overall. At minimum inspect objective coverage, skills-bullet ids, recall and MCQ integrity, confusion set integrity, study contract, and progressive enhancement.
 
 Verifier checks unique `cNN-qMM` and recall IDs, expected chapter counts, registry objective references, and per-page recall markup. It does not judge question quality, distractor defensibility, Bloom validity, or whether rationale truly explains the misconception. Human review remains required.
+
+
+## Recall objective requirement
+
+Every authored recall item must carry `data-objective` as well as `data-recall`, using one or more real objective ids from `assets/registry.js`:
+
+```html
+<details class="more recall-item" data-recall="c05-r10" data-objective="az900-c05-o6"><summary>What does a private endpoint provide?</summary><p>A private IP on a VNet network interface through Private Link.</p></details>
+```
+
+Space-separate multiple objective ids. Untagged recall items silently break objective-level weakness reporting: `study.js` cannot attribute their attempts, misses, or high-confidence misses to an objective. MCQ answer panels continue to require `data-objective` too. Verify that every tag names an existing registry objective and that each objective has intended recall coverage.

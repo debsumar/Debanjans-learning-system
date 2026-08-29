@@ -147,6 +147,9 @@ Platform CSS and JavaScript stay shared. One intentional manual platform edit re
 - **Leitner spacing:** move successful items through 1, 3, 7, 14, and 30-day review intervals; return misses to the first box.
 - **Interleave discrimination:** after chapter foundations, mix look-alike services across chapters so retrieval depends on the discriminator, not position.
 - **Weight-aware priority:** review Domain 2 first, then Domain 3, then Domain 1; within each, work low-confidence, missed, and due items first.
+- **Rule boundaries:** TL;DR cards state a decision rule with its boundary; misconception callouts close wrong inferences; causal steps appear only when a real ordered path exists.
+- **Targeted practice:** first-use glossary links support quick definitions, and recall objectives make weakness reporting objective-level.
+- **Portable study brief:** optional study.js enhancement ranks weak objectives by miss rate and marks high-confidence misses for LLM-targeted practice. Use visible textarea under `file://`; clipboard can fail, and localStorage is per file URL on disk but shared on hosted pages.
 
 ## Blueprint
 

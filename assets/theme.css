@@ -15,6 +15,8 @@
   --warn-dim: rgba(212, 160, 23, .12);
   --good-dim: rgba(93, 184, 114, .12);
   --hook-dim: rgba(212, 162, 127, .12);
+  --myth: #b982c7;
+  --myth-dim: rgba(185, 130, 199, .14);
   --row: rgba(250, 249, 245, .035);
   --code: #1f1e1b;
   --radius: 8px;
@@ -39,6 +41,8 @@
   --warn-dim: rgba(138, 97, 0, .10);
   --good-dim: rgba(47, 122, 68, .10);
   --hook-dim: rgba(138, 69, 34, .10);
+  --myth: #7c3f82;
+  --myth-dim: rgba(124, 63, 130, .10);
   --code: #f4f2ea;
   --row: rgba(20, 20, 19, .035);
   --radius: 8px;
@@ -95,6 +99,17 @@ table.t tbody tr:nth-child(even) { background: var(--row); }
 .cal.confuse .lbl { color: var(--warn); }
 .cal.clue .lbl { color: var(--good); }
 .cal.hook .lbl { color: var(--accent); }
+.cal.myth { border-left-color: var(--myth); background: var(--myth-dim); }
+.cal.myth .lbl { color: var(--myth); }
+.tldr { border-left: 4px solid var(--accent); padding-left: 20px; }
+.tldr h2 { margin-bottom: 10px; }
+.tldr > ul { margin-top: 0; margin-bottom: 0; font-size: 1.04rem; line-height: 1.45; }
+.tldr > ul > li { margin: 2px 0; }
+.steps { list-style: none; margin: 8px 0 16px; padding: 0 0 0 2.15rem; counter-reset: steps; }
+.steps > li { counter-increment: steps; position: relative; margin: 0; padding: 0 0 12px; }
+.steps > li::before { content: counter(steps); position: absolute; z-index: 1; left: -2.15rem; top: 10px; display: grid; place-items: center; width: 1.65rem; height: 1.65rem; background: var(--surface-2); border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); font: 600 .8rem/1 var(--font); }
+.steps > li:not(:last-child)::after { content: ""; position: absolute; left: -1.34rem; top: 2rem; bottom: 0; border-left: 1px solid var(--border); }
+.steps > li > details.more { position: relative; margin-top: 0; }
 details.more { font-family: var(--font); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 13px; margin-top: 14px; }
 details.more summary { cursor: pointer; color: var(--text); font-weight: 600; }
 details.more summary::marker { color: var(--accent); }
@@ -136,6 +151,7 @@ input { width: 100%; max-width: 420px; background: var(--code); color: var(--tex
 .study-summary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 22px; margin: 0 0 16px; }
 .study-summary p { margin-bottom: 8px; }
 .study-summary ul { margin-bottom: 4px; }
+.study-summary textarea { display: block; width: 100%; min-height: 14rem; margin: 10px 0; padding: 10px; background: var(--code); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); font: .82rem/1.45 var(--mono); resize: vertical; }
 .study-summary .study-high-miss { color: var(--warn); }
 .study-status.study-mastered { color: var(--good); }
 details.more.study-high-miss { border-color: var(--warn); background: var(--warn-dim); }
@@ -157,6 +173,8 @@ details.more.study-mastered { border-color: var(--good); background: var(--good-
     --warn-dim: rgba(107, 79, 0, .10);
     --good-dim: rgba(39, 92, 53, .10);
     --hook-dim: rgba(107, 45, 26, .10);
+    --myth: #633c68;
+    --myth-dim: rgba(99, 60, 104, .10);
     --row: rgba(17, 17, 17, .05);
     --code: #f3f3f3;
     --radius: 8px;
@@ -167,6 +185,11 @@ details.more.study-mastered { border-color: var(--good); background: var(--good-
   body { background: var(--bg); color: var(--text); padding: 0; }
   .top, .top-links, nav.toc, .theme-toggle, .skip { display: none; }
   section.card, .grid > .card { background: transparent; border: 1px solid var(--border); break-inside: avoid; }
+  .tldr { border-left: 4px solid var(--accent); }
+  .cal.myth { border-left-color: var(--myth); background: var(--myth-dim); }
+  .steps > li { break-inside: avoid; }
+  .steps > li::before { background: transparent; }
+  .steps > li:not(:last-child)::after { border-left-color: var(--border); }
   p a, li a, dl.defs dd a, table.t td a { color: var(--text); text-decoration: underline; }
   table.t { min-width: 0; }
   table.t th, table.t td { border: 1px solid var(--border); }

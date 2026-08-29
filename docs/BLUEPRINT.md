@@ -36,3 +36,20 @@ Verifier cannot prove factual truth, current Microsoft policy, official-source c
 8. Add AWS Leitner, confidence, and weight-proportional review policy. Record any coverage skew honestly.
 9. Run syntax, ASCII, uniqueness, objective-coverage, section-order, count, confusion, and SVG checks.
 10. Review facts, wording, answer keys, rationales, and visual teaching value manually. Passing shape checks is not factual approval.
+
+
+## Learning components and data boundaries
+
+The five learning components belong in the presentation layer, with machine-checkable metadata kept beside them:
+
+- TL;DR card: static HTML summary and TOC link; registry declares the chapter-level presence contract.
+- `.cal.myth`: static misconception closure; registry declares the allowed component contract and tooling checks count and label shape.
+- `.steps`: static ordered causal sequence; registry declares presence only where a real ordered path is intended. Chapters 01, 02, and 03 omit it.
+- First-use glossary links: static cross-file links to glossary ids; registry glossary metadata and verifier checks keep anchors resolvable.
+- Recall `data-objective`: static item metadata; registry objective ids are data, and tooling checks every reference against them.
+
+HTML owns wording, order, and markup. CSS owns `.tldr`, `.cal.myth`, and `.steps` presentation. `study.js` owns optional interaction and serialisation. `assets/registry.js` declares the component and objective contracts so `tools/verify.ps1` can check them; it does not render pages and readers do not load it as a runtime dependency.
+
+The portable study brief is derived data, not authored chapter content. `study.js` reads `data-objective` and local study records, ranks objective results by miss rate, marks high-confidence misses, and writes Markdown to the visible textarea. Clipboard copying is only a convenience; the textarea remains the reliable `file://` path. Per-file-URL `localStorage` means disk-opened pages keep separate state, while the hosted copy shares state across its pages.
+
+These checks prove shape and linkage, not teaching quality. Human review still decides whether a TL;DR boundary is accurate, a myth closes a real inference, a steps list represents causality, a glossary link is first-use and substantive, or an objective tag reflects what recall tests.

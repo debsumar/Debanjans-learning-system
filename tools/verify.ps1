@@ -330,8 +330,137 @@ foreach ($path in $studyPagePaths) {
   if ($scripts -ne 1 -or $mounts -ne 1 -or -not $trailing) { $studyPass = $false; Write-Host ("  study contract {0}: scripts={1}, mounts={2}, trailing={3}" -f $name, $scripts, $mounts, $trailing) }
 }
 $studyText = Read-Text $studyPath
-if ($null -eq $studyText) { $studyPass = $false; Write-Host '  study.js missing or unreadable' } elseif ($studyText -match '(?i)\b(import|export|fetch)\b' -or $studyText -match '\bvar\b') { $studyPass = $false; Write-Host '  study.js contains forbidden module, fetch, or var syntax' }
-Add-Check 'study contract' ($studyPass -and $studyPages -eq 13) $studyPages '11 chapters, review, and hub each have one mount and one trailing classic study script'
+$studyCode = $null
+$studySyntaxPass = $false
+$moduleSyntaxCount = 0; $networkCallCount = 0; $varSyntaxCount = 0
+if ($null -ne $studyText) {
+  # Remove comments before syntax checks: words in comments are not code.
+  $studyCode = [regex]::Replace($studyText, '(?s)/\*.*?\*/', '')
+  $studyCode = [regex]::Replace($studyCode, '(?m)//[^\r\n]*', '')
+  $moduleSyntaxCount = @([regex]::Matches($studyCode, '(?m)^\s*(?:import|export)\b')).Count
+  $networkCallCount = @([regex]::Matches($studyCode, '(?m)(?<![\w$])(?:[\w$]+\.)*fetch\s*\(')).Count
+  $varSyntaxCount = @([regex]::Matches($studyCode, '\bvar\b')).Count
+  $studySyntaxPass = $moduleSyntaxCount -eq 0 -and $networkCallCount -eq 0 -and $varSyntaxCount -eq 0
+  if (-not $studySyntaxPass) { Write-Host ("  study.js forbidden syntax: module={0}, network={1}, var={2}" -f $moduleSyntaxCount, $networkCallCount, $varSyntaxCount) }
+}
+if ($null -eq $studyText) { $studyPass = $false; Write-Host '  study.js missing or unreadable' } elseif (-not $studySyntaxPass) { $studyPass = $false }
+Add-Check 'study contract' ($studyPass -and $studyPages -eq 13) $studyPages '11 chapters, review, and hub each have one mount and one trailing classic study script; syntax is classic and local-only'
+
+$componentNames = @('tldr', 'myth', 'steps', 'glossary-link', 'study-brief')
+$componentPass = $registryLoaded; $componentHits = 0
+if ($registryLoaded) {
+  foreach ($name in $componentNames) {
+    $property = if ($name -match '-') { '"' + [regex]::Escape($name) + '"' } else { '\b' + [regex]::Escape($name) + '\b' }
+    if ($registryText -match ('componentCatalogue\s*:\s*\{[\s\S]*?' + $property + '\s*:')) { $componentHits++ } else { $componentPass = $false; Write-Host ('  component catalogue entry missing: ' + $name) }
+  }
+  if ($registryText -notmatch 'componentCatalogue\s*:\s*\{') { $componentPass = $false }
+  if ($registryText -notmatch 'glossaryAnchorRule\s*:') { $componentPass = $false; Write-Host '  glossary anchor slug rule missing from registry' }
+  $requiredMarkupCount = @([regex]::Matches($registryText, '\brequiredMarkup\s*:')).Count
+  $invariantCount = @([regex]::Matches($registryText, '\binvariants\s*:')).Count
+  if ($requiredMarkupCount -lt 5 -or $invariantCount -lt 5) { $componentPass = $false; Write-Host ("  component catalogue contracts incomplete: markup={0}, invariants={1}" -f $requiredMarkupCount, $invariantCount) }
+}
+Add-Check 'component catalogue' ($componentPass -and $componentHits -eq $componentNames.Count) $componentHits 'tldr, myth, steps, glossary-link, and study-brief declare markup and invariants'
+
+$tldrPass = $true; $tldrPages = 0; $tldrCount = 0; $tldrLiTotal = 0
+foreach ($chapter in $registryChapters) {
+  $text = Read-Text (Join-Path $topicRoot $chapter.File)
+  if ($null -eq $text) { $tldrPass = $false; Write-Host ('  TL;DR chapter missing: ' + $chapter.File); continue }
+  $tldrPages++
+  $mainMatch = [regex]::Match($text, '<main\b[^>]*\bid\s*=\s*["'']main["''][^>]*>([\s\S]*?)</main>')
+  if (-not $mainMatch.Success) { $tldrPass = $false; Write-Host ('  TL;DR main missing: ' + $chapter.File); continue }
+  $mainBody = $mainMatch.Groups[1].Value
+  $tldrPattern = '<section\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\bcard\b[^"'']*\btldr\b[^"'']*["''])(?=[^>]*\bid\s*=\s*["'']tldr["''])[^>]*>[\s\S]*?</section>'
+  $tldrMatches = @([regex]::Matches($mainBody, $tldrPattern))
+  $tldrCount += $tldrMatches.Count
+  $firstSection = [regex]::Match($mainBody, '<section\b[^>]*>')
+  $firstIsTldr = $firstSection.Success -and $firstSection.Value -match '\bclass\s*=\s*["''][^"'']*\bcard\b[^"'']*\btldr\b[^"'']*["'']' -and $firstSection.Value -match '\bid\s*=\s*["'']tldr["'']'
+  if ($tldrMatches.Count -ne 1 -or -not $firstIsTldr) { $tldrPass = $false; Write-Host ("  TL;DR shape {0}: sections={1}, first={2}" -f $chapter.File, $tldrMatches.Count, $firstIsTldr) }
+  if ($tldrMatches.Count -eq 1) {
+    $liCount = @([regex]::Matches($tldrMatches[0].Value, '<li\b')).Count; $tldrLiTotal += $liCount
+    if ($liCount -lt 4 -or $liCount -gt 6) { $tldrPass = $false; Write-Host ("  TL;DR bullet count {0}: {1}" -f $chapter.File, $liCount) }
+  }
+  $toc = [regex]::Match($text, '<nav\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\btoc\b[^"'']*["''])[^>]*>[\s\S]*?</nav>')
+  if (-not $toc.Success -or $toc.Value -notmatch 'href\s*=\s*["'']#tldr["'']') { $tldrPass = $false; Write-Host ('  TL;DR TOC link missing: ' + $chapter.File) }
+}
+$tldrPass = $tldrPass -and $tldrPages -eq 11 -and $tldrCount -eq 11
+Add-Check 'TL;DR contract' $tldrPass $tldrCount ("chapters={0}, tldr-sections={1}, bullets={2}, each has nav.toc #tldr" -f $tldrPages, $tldrCount, $tldrLiTotal)
+
+$glossaryText = Read-Text (Join-Path $topicRoot 'glossary.html')
+$glossaryPass = $null -ne $glossaryText; $glossaryLinkCount = 0; $deadGlossaryTargets = @(); $invalidGlossarySlugs = @(); $glossaryIds = @{}
+if ($null -ne $glossaryText) {
+  foreach ($idMatch in [regex]::Matches($glossaryText, '<dt\b[^>]*\bid\s*=\s*["'']([^"'']+)["'']')) { $glossaryIds[$idMatch.Groups[1].Value] = $true }
+} else { Write-Host '  glossary file missing or unreadable' }
+foreach ($chapter in $registryChapters) {
+  $text = Read-Text (Join-Path $topicRoot $chapter.File)
+  if ($null -eq $text) { $glossaryPass = $false; continue }
+  foreach ($link in [regex]::Matches($text, 'href\s*=\s*["'']glossary\.html#(g-[^"''#]+)["'']')) {
+    $glossaryLinkCount++; $target = $link.Groups[1].Value
+    if ($target -notmatch '^g-[a-z0-9]+(?:-[a-z0-9]+)*$') { $invalidGlossarySlugs += $target; $glossaryPass = $false; Write-Host ('  invalid glossary slug ' + $target + ': ' + $chapter.File) }
+    if (-not $glossaryIds.ContainsKey($target)) { $deadGlossaryTargets += ($chapter.File + '#' + $target); $glossaryPass = $false; Write-Host ('  dead glossary target ' + $chapter.File + '#' + $target) }
+  }
+}
+$deadGlossaryTargets = @($deadGlossaryTargets | Select-Object -Unique); $invalidGlossarySlugs = @($invalidGlossarySlugs | Select-Object -Unique)
+Add-Check 'cross-file glossary anchors' $glossaryPass $glossaryLinkCount ("links={0}, dead={1}, invalid-slugs={2}; targets resolve to glossary dt ids" -f $glossaryLinkCount, $deadGlossaryTargets.Count, $invalidGlossarySlugs.Count)
+
+$recallObjectivePass = $registryLoaded; $chapterRecallObjectiveCount = 0; $recallObjectiveUnknown = @(); $recallObjectiveMissing = @()
+foreach ($chapter in $registryChapters) {
+  $text = Read-Text (Join-Path $topicRoot $chapter.File)
+  if ($null -eq $text) { $recallObjectivePass = $false; continue }
+  foreach ($item in [regex]::Matches($text, '<[^>]*\bdata-recall\s*=\s*["''][^"'']+["''][^>]*>')) {
+    $chapterRecallObjectiveCount++
+    $objectiveAttr = [regex]::Match($item.Value, 'data-objective\s*=\s*["'']([^"'']*)["'']')
+    if (-not $objectiveAttr.Success -or [string]::IsNullOrWhiteSpace($objectiveAttr.Groups[1].Value)) { $recallObjectiveMissing += $chapter.File; $recallObjectivePass = $false; continue }
+    foreach ($raw in ($objectiveAttr.Groups[1].Value -split '\s+')) {
+      if (-not $raw) { continue }
+      $id = Normalize-ObjectiveId $raw
+      if (-not $objectiveExpected.ContainsKey($id)) { $recallObjectiveUnknown += ($chapter.File + ':' + $raw); $recallObjectivePass = $false }
+    }
+  }
+}
+$recallObjectiveUnknown = @($recallObjectiveUnknown | Select-Object -Unique); $recallObjectiveMissing = @($recallObjectiveMissing | Select-Object -Unique)
+if ($recallObjectiveUnknown.Count) { Write-Host ('  recall objectives absent from registry: ' + ($recallObjectiveUnknown -join ', ')) }
+if ($recallObjectiveMissing.Count) { Write-Host ('  recall items missing data-objective: ' + ($recallObjectiveMissing -join ', ')) }
+$recallObjectivePass = $recallObjectivePass -and $chapterRecallObjectiveCount -eq 114
+Add-Check 'recall objective coverage' $recallObjectivePass $chapterRecallObjectiveCount ("chapter-items={0}, expected=114, unknown-objectives={1}, missing-objective-attrs={2}; review.html rev-* items explicitly exempt" -f $chapterRecallObjectiveCount, $recallObjectiveUnknown.Count, $recallObjectiveMissing.Count)
+
+$stepsPass = $true; $stepListCount = 0; $stepItemCount = 0; $stepOpenCount = 0
+$stepPattern = '<ol\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\bsteps\b[^"'']*["''])[^>]*>[\s\S]*?</ol>'
+foreach ($chapter in $registryChapters) {
+  $text = Read-Text (Join-Path $topicRoot $chapter.File)
+  if ($null -eq $text) { $stepsPass = $false; continue }
+  foreach ($list in [regex]::Matches($text, $stepPattern)) {
+    $stepListCount++; $items = @([regex]::Matches($list.Value, '<li\b[^>]*>[\s\S]*?</li>')); $stepItemCount += $items.Count
+    $listOpenCount = @([regex]::Matches($list.Value, '<details\b[^>]*\bopen(?:\s*=\s*(?:["''][^"'']*["'']|[^\s>]+))?[^>]*>')).Count; $stepOpenCount += $listOpenCount
+    if ($items.Count -eq 0) { $stepsPass = $false; Write-Host ('  steps list has no li: ' + $chapter.File) }
+    foreach ($item in $items) {
+      $details = @([regex]::Matches($item.Value, '<details\b[^>]*>')).Count
+      if ($details -ne 1) { $stepsPass = $false; Write-Host ("  steps li details count {0}: {1}" -f $chapter.File, $details) }
+    }
+    $firstDetails = [regex]::Match($list.Value, '<details\b[^>]*>')
+    if ($listOpenCount -ne 1 -or -not $firstDetails.Success -or $firstDetails.Value -notmatch '\bopen(?:\s*=\s*(?:["''][^"'']*["'']|[^\s>]+))?') { $stepsPass = $false; Write-Host ("  steps open contract {0}: open={1}, first-open={2}" -f $chapter.File, $listOpenCount, ($firstDetails.Success -and $firstDetails.Value -match '\bopen(?:\s*=\s*(?:["''][^"'']*["'']|[^\s>]+))?')) }
+  }
+}
+Add-Check 'steps contract' $stepsPass $stepListCount ("lists={0}, items={1}, open-details={2}; every li has one details and first is sole open" -f $stepListCount, $stepItemCount, $stepOpenCount)
+
+$mythPass = $true; $mythTotal = 0; $mythDistribution = @(); $mythPattern = '<(?<tag>div|aside|p)\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\bcal\b[^"'']*["''])(?=[^>]*\bclass\s*=\s*["''][^"'']*\bmyth\b[^"'']*["''])[^>]*>'
+foreach ($chapter in $registryChapters) {
+  $text = Read-Text (Join-Path $topicRoot $chapter.File)
+  if ($null -eq $text) { $mythPass = $false; continue }
+  $chapterMythCount = 0
+  foreach ($myth in [regex]::Matches($text, $mythPattern)) {
+    $chapterMythCount++; $mythTotal++; $tag = $myth.Groups['tag'].Value; $rest = $text.Substring($myth.Index); $close = [regex]::Match($rest, '</' + $tag + '\s*>')
+    if (-not $close.Success -or $rest.Substring(0, $close.Index + $close.Length) -notmatch '<span\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\blbl\b[^"'']*["''])[^>]*>') { $mythPass = $false; Write-Host ('  myth callout missing span.lbl: ' + $chapter.File) }
+  }
+  if ($chapterMythCount -gt 3) { $mythPass = $false; Write-Host ("  myth callout maximum exceeded {0}: {1}" -f $chapter.File, $chapterMythCount) }
+  $mythDistribution += ($chapter.File + '=' + $chapterMythCount)
+}
+Add-Check 'myth callouts' $mythPass $mythTotal ("per-chapter {0}; each has span.lbl, max=3" -f ($mythDistribution -join ', '))
+
+$briefTerms = @('buildBrief', 'buildDueList', 'copyBrief', 'Copy study brief', 'Copy due-review list')
+$briefMissing = @(); if ($null -eq $studyText) { $briefMissing = $briefTerms } else { $briefMissing = @($briefTerms | Where-Object { $studyText -notmatch [regex]::Escape($_) }) }
+$briefPass = $briefMissing.Count -eq 0
+if ($briefMissing.Count) { Write-Host ('  study brief controls missing: ' + ($briefMissing -join ', ')) }
+Add-Check 'study brief contract' $briefPass $briefTerms.Count ("brief builder and copy controls present; missing={0}; module={1}, network={2}, var={3}" -f $briefMissing.Count, $moduleSyntaxCount, $networkCallCount, $varSyntaxCount)
 
 $progressPass = $true; $answerCount = 0; $hiddenAnswerCount = 0; $missingSummaryCount = 0
 $studyAddedClasses = @()

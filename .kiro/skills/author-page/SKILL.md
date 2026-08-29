@@ -102,3 +102,58 @@ JavaScript disabled. Never hide answer content behind a class added only by
 Run `tools\verify.ps1` after writing. Require 0 failures. Check ASCII, exact
 relative asset paths, unique IDs, shell order, table scopes, diagram labels,
 study mounts, trailing study script, and readable answers before handoff.
+
+
+## New learning components
+
+Use these exact shipped patterns. Read `docs/THEME.md`, `assets/theme.css`, and `assets/study.js` before authoring.
+
+### TL;DR
+
+Put one TL;DR card first inside `<main>`. Add its TOC pill. Use 4-6 bullets. Each bullet must state a rule and its boundary, not a topic label:
+
+```html
+<nav class="toc"><a href="#tldr">In one minute</a></nav>
+<main id="main"><section class="card tldr" id="tldr"><h2>In one minute</h2><ul>
+<li>Choose a VM when guest OS control is required; choose a managed host when that boundary is not required.</li>
+<li>Use a subscription for billing and access boundaries; use a resource group for lifecycle grouping.</li>
+<li>Use a private endpoint for a private VNet path; configure public network access separately.</li>
+<li>Use a region pair for selected cross-region continuity features; pairing alone does not guarantee failover.</li>
+</ul></section>
+```
+
+### Myth callout
+
+Use no more than 2-3 per chapter. Quote false belief, then correct it. Label must be `Common wrong turn`. `.cal.confuse` states a rule; `.cal.myth` closes a wrong inference:
+
+```html
+<div class="cal myth"><span class="lbl">Common wrong turn</span><p><strong>&ldquo;Adding a private endpoint automatically disables public access.&rdquo;</strong> &mdash; It adds a private VNet path; public network access remains a separate setting.</p></div>
+```
+
+### Causal steps
+
+Add only where genuine ordered causality exists. Chapters 01, 02, and 03 correctly have none. Forcing one is worse than omitting it. Use `<ol class="steps">` containing `<details class="more">`; first item open, all later items closed. Text must preserve sequence meaning with JavaScript off:
+
+```html
+<ol class="steps"><li><details class="more" open><summary>1. Request targets a private IP.</summary><p>The private endpoint exposes a private IP in the VNet.</p></details></li><li><details class="more"><summary>2. Private Link carries the request.</summary><p>The private path reaches the Azure service.</p></details></li><li><details class="more"><summary>3. Public access is configured separately.</summary><p>Disable public network access separately when required.</p></details></li></ol>
+```
+
+### First-use glossary link
+
+Link first substantive prose use only. Never link inside a heading, table header, `summary`, MCQ stem or option, or TL;DR. Use canonical cross-file href and slug rule: `g-` + term lowercased, runs of non-alphanumerics collapsed to single hyphens, edge hyphens removed:
+
+```html
+<p>A <a href="glossary.html#g-private-endpoint">private endpoint</a> maps an Azure service to a private IP in a VNet.</p>
+```
+
+### Recall objective
+
+Every recall item must carry `data-objective` with one or more real registry ids. Space-separate multiple ids. This tag enables objective-level weakness reporting:
+
+```html
+<details class="more recall-item" data-recall="c05-r10" data-objective="az900-c05-o6"><summary>What does a private endpoint provide?</summary><p>A private IP on a VNet network interface through Private Link.</p></details>
+```
+
+### Portable study brief
+
+Keep exactly one `<div id="study-summary"></div>` on every study-enabled page, before the trailing `study.js` script. `study.js` is optional progressive enhancement. It serialises study state to Markdown in a visible read-only textarea, ranking weak objectives by miss rate and marking high-confidence misses for LLM-targeted practice. Visible textarea is primary because clipboard access is unreliable under `file://`. `localStorage` is per file URL: disk-opened pages do not share state, hosted pages do. Never make content depend on the brief or on JavaScript.

@@ -124,7 +124,37 @@ globalThis.LEARNING_SYSTEM = {
     }
   },
 
-  /* 5. QUESTION SCHEMA. Existing pages supply items; registry declares contract only. */
+  /* 5. AUTHORED COMPONENT CATALOGUE. Markup contracts are source of truth. */
+  componentCatalogue: {
+    glossaryAnchorRule: "Slug is g- plus lowercase ASCII term words joined by hyphens; chapter hrefs use glossary.html#g-... and resolve to glossary dt ids.",
+    tldr: {
+      purpose: "Summary-first mental-model card.",
+      requiredMarkup: "section.card.tldr#tldr containing h2 and one ul with li bullets.",
+      invariants: ["Exactly one per chapter.", "First section inside main.", "Contains 4-6 rule-and-boundary li bullets.", "nav.toc contains a link to #tldr."]
+    },
+    myth: {
+      purpose: "Misconception-closure callout in the .cal family.",
+      requiredMarkup: "A .cal.myth callout containing one span.lbl and closure prose.",
+      invariants: ["Closes a wrong inference, distinct from .cal.confuse which states a rule.", "At most 3 per chapter."]
+    },
+    steps: {
+      purpose: "Ordered causal sequence readable with JavaScript disabled.",
+      requiredMarkup: "ol.steps containing ordered li elements, each with one native details element.",
+      invariants: ["Every li contains a details element.", "Exactly one details is open, and it is the first.", "Sequence meaning remains in native HTML with JS off."]
+    },
+    "glossary-link": {
+      purpose: "First substantive prose use of a glossary term.",
+      requiredMarkup: "An a href=glossary.html#g-slug link around the first substantive prose term.",
+      invariants: ["Never in a heading, table header, summary, MCQ stem or option, or the TL;DR.", "Target slug resolves to a glossary dt id."]
+    },
+    "study-brief": {
+      purpose: "Portable study brief and due-review copy controls.",
+      requiredMarkup: "study.js builds a brief and renders Copy study brief and Copy due-review list controls.",
+      invariants: ["Classic optional script only.", "No module syntax, network call, or variable declaration."]
+    }
+  },
+
+  /* 6. QUESTION SCHEMA. Existing pages supply items; registry declares contract only. */
   questionSchema: {
     requiredFields: ["itemId", "objectiveIds", "bloom", "stem", "options", "key", "keyRationale", "distractorRationales"],
     bloom: ["remember", "understand", "apply", "analyze"],
@@ -143,7 +173,7 @@ globalThis.LEARNING_SYSTEM = {
     }
   },
 
-  /* 6. DIAGRAM CATALOGUE. Fifteen diagrams, seven archetypes. */
+  /* 7. DIAGRAM CATALOGUE. Fifteen diagrams, seven archetypes. */
   diagramCatalogue: {
     archetypes: {
       "flow-chain": {
@@ -191,7 +221,7 @@ globalThis.LEARNING_SYSTEM = {
     }
   },
 
-  /* 7. CONFUSION SETS. calloutChapter is source truth; hubLinkTarget is resolved target. */
+  /* 8. CONFUSION SETS. calloutChapter is source truth; hubLinkTarget is resolved target. */
   confusionSets: [
     { id: "policy-rbac-locks", discriminator: "Policy enforces standards; RBAC grants actions; locks block deletion or changes.", objectiveIds: ["az900-c07-o5", "az900-c09-o2", "az900-c09-o3"], calloutChapter: "c09", hubLinkTarget: "09-governance-compliance.html#discrimination" },
     { id: "monitor-advisor-service-health", discriminator: "Monitor observes workloads; Advisor recommends; Service Health reports Azure incidents and maintenance.", objectiveIds: ["az900-c11-o1", "az900-c11-o2", "az900-c11-o3"], calloutChapter: "c11", hubLinkTarget: "11-monitoring.html#trio" },

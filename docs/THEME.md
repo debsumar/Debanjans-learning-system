@@ -116,7 +116,7 @@ No `@font-face`, remote stylesheet, remote script, remote image, or other remote
 
 ## Study markup contract
 
-Study markup is stable, semantic HTML. A chapter body carries `data-chapter`, `data-domain`, and `data-weight`. Recall answers use `<details class="recall-item" data-recall="cNN-rMM">`; multiple-choice answers use `data-mcq="cNN-qMM"`. IDs are unique across the repository. Objective-linked answers carry one or more `data-objective` values from the registry. The `#skills` list uses one `id="az900-cNN-oM"` on every objective `<li>`.
+Study markup is stable, semantic HTML. A chapter body carries `data-chapter`, `data-domain`, and `data-weight`. Recall answers use `<details class="recall-item" data-recall="cNN-rMM" data-objective="az900-cNN-oM">`; multiple-choice answers use `data-mcq="cNN-qMM"` and `data-objective="..."`. IDs are unique across the repository. Objective-linked answers carry one or more `data-objective` values from the registry. The `#skills` list uses one `id="az900-cNN-oM"` on every objective `<li>`.
 
 Every study-enabled chapter, the review page, and the topic hub provide exactly one `<div id="study-summary"></div>` mount and exactly one trailing `<script src="../../assets/study.js"></script>` reference. `study.js` is OPTIONAL progressive enhancement: attempt, confidence, self-grade, and Leitner controls are conveniences; all prompts and answer content remain readable with JavaScript disabled.
 
@@ -127,3 +127,74 @@ All JavaScript uses ES2026 syntax in classic scripts: never modules. `import` is
 `assets/registry.js` directly assigns one `globalThis.LEARNING_SYSTEM` object in a classic script. It stores the certification manifest, objective registry, ordered chapter map, section archetypes, question contract, diagram catalogue, confusion sets, and study policy. It is author-side single source of truth, not a runtime dependency.
 
 `tools/verify.ps1` extracts registry metadata text and validates registry JavaScript syntax with Node when available. It checks registry/disk chapter parity, navigation chain, exact launcher and hub href order, objective coverage, question IDs/counts, skills-bullet IDs, confusion targets, SVG geometry, study contract, JavaScript-disabled readability, classic-script syntax, static HTML restrictions, same-file anchors, skip/main contracts, and shared asset references. It prints PASS/FAIL/SKIP counts and exits non-zero on any failure.
+
+
+## Learning affordance contracts
+
+These components are presentation contracts. Keep their content in static HTML so the page remains useful with JavaScript disabled.
+
+### TL;DR card
+
+Every chapter starts its `<main>` with one TL;DR card, and its TOC includes a pill linking to `#tldr`:
+
+```html
+<nav class="toc"><a href="#tldr">In one minute</a></nav>
+<main id="main"><section class="card tldr" id="tldr"><h2>In one minute</h2><ul>
+<li>Choose a VM when guest OS control is required; choose a managed host when that boundary is not required.</li>
+<li>Use a subscription for billing and access boundaries; use a resource group for lifecycle grouping.</li>
+<li>Use a private endpoint for a private VNet path; configure public network access separately.</li>
+<li>Use a region pair for selected cross-region continuity features; pairing alone does not guarantee failover.</li>
+</ul></section>
+```
+
+Use 4-6 bullets. Each bullet states a rule and its boundary: what to choose or conclude, plus the condition, limit, exception, or scope that prevents overgeneralization. A topic label alone is not a TL;DR rule.
+
+### Misconception closure
+
+Use `.cal.myth` for a short misconception-closure callout. Label it `Common wrong turn`, quote the false belief, then correct it:
+
+```html
+<div class="cal myth"><span class="lbl">Common wrong turn</span><p><strong>&ldquo;Adding a private endpoint automatically disables public access.&rdquo;</strong> &mdash; It adds a private VNet path; public network access remains a separate setting.</p></div>
+```
+
+`.cal.confuse` states the rule or discriminator. `.cal.myth` closes a wrong inference by naming the belief and correcting it. Use no more than 2-3 myth callouts per chapter.
+
+### Causal steps
+
+Use `.steps` only for a genuine ordered causal path. It is an ordered list of expandable details; first item is open, remaining items are closed:
+
+```html
+<ol class="steps"><li><details class="more" open><summary>1. Request targets a private IP.</summary><p>The private endpoint exposes a private IP in the VNet.</p></details></li><li><details class="more"><summary>2. Private Link carries the request.</summary><p>The private path reaches the Azure service.</p></details></li><li><details class="more"><summary>3. Public access is configured separately.</summary><p>Disable public network access separately when required.</p></details></li></ol>
+```
+
+Step text must still read as an ordered sequence with JavaScript off. Chapters 01, 02, and 03 correctly have no causal sequence. Do not force `.steps` into a chapter when no genuine ordered path exists; omission is better than a false process.
+
+### First-use glossary links
+
+Link the first substantive prose use of a glossary term to its canonical definition:
+
+```html
+<p>A <a href="glossary.html#g-private-endpoint">private endpoint</a> maps an Azure service to a private IP in a VNet.</p>
+```
+
+Do not place these links in headings, table headers, `summary`, MCQ stems or options, or TL;DR content. Use only the first substantive prose occurrence; later uses need no link. Glossary ids use `g-` plus the term lowercased, with each run of non-alphanumeric characters collapsed to one hyphen and edge hyphens removed. Example: `Private endpoint` becomes `g-private-endpoint`.
+
+### Objective-linked recall
+
+Recall items carry one or more objective ids, just like MCQ answer panels:
+
+```html
+<details class="more recall-item" data-recall="c05-r10" data-objective="az900-c05-o6"><summary>What does a private endpoint provide?</summary><p>A private IP on a VNet network interface through Private Link.</p></details>
+```
+
+`data-objective` enables objective-level weakness reporting. Use registry objective ids, separated by spaces when an item tests more than one objective.
+
+### Portable study brief
+
+Each study-enabled page has exactly one `<div id="study-summary"></div>` mount. `study.js` optionally enhances it with controls and a read-only visible textarea. The script serialises current study state as copyable Markdown: weak objectives rank by miss rate, and high-confidence misses receive a `[HIGH-CONFIDENCE MISS]` marker. The brief is intended to be pasted to an LLM to request targeted practice.
+
+This is optional progressive enhancement, not content delivery. The visible textarea is the primary copy path because clipboard access is unreliable under `file://`; a failed clipboard attempt must not remove or hide the text. `localStorage` is per file URL: state does not accumulate across pages opened from disk, but does accumulate across pages on the hosted copy. Pages and answers remain readable with JavaScript disabled.
+
+### CSS contract
+
+Use shipped selectors without inline styles or new component names. `.tldr` extends `section.card` with an accent left border and compact list spacing. `.cal.myth` extends `.cal` with the myth border and tint tokens; its text label remains visible, so colour is not its only meaning. `.steps` removes the default list treatment, supplies numbered markers and a connector, and wraps each item in `details.more`. `.study-summary` styles the optional metrics, high-confidence miss list, copy controls, reset controls, and read-only textarea; print rules hide study controls without hiding answers.
