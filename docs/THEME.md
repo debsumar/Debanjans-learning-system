@@ -28,7 +28,9 @@ Every document starts with `<!doctype html>` and uses `<html lang="en" data-them
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="[One ASCII sentence describing page contents.]">
 <title>[Page title]</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d97757' d='M2 4l6-2 6 2-6 2-6-2Zm0 3 6 2 6-2v3l-6 2-6-2V7Z'/%3E%3C/svg%3E">
 <script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/theme.css">
 </head>
@@ -40,7 +42,9 @@ A topic page is at depth 2 under `topics/<slug>/`:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="[One ASCII sentence describing page contents.]">
 <title>[Topic page title]</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d97757' d='M2 4l6-2 6 2-6 2-6-2Zm0 3 6 2 6-2v3l-6 2-6-2V7Z'/%3E%3C/svg%3E">
 <script src="../../assets/theme.js"></script>
 <link rel="stylesheet" href="../../assets/theme.css">
 <link rel="stylesheet" href="topic.css">
@@ -122,7 +126,10 @@ Every study-enabled chapter, the review page, and the topic hub provide exactly 
 
 All JavaScript uses ES2026 syntax in classic scripts: never modules. `import` is CORS-blocked from `file://`, so do not use `<script type="module">`, module imports, or a fetch-based runtime contract. `localStorage` is scoped per file URL. Study state does not follow the reader between pages opened from disk, but works normally on the hosted GitHub Pages copy.
 
-## Registry and verification
+## Interactive outcome model contract
+
+An optional interactive model uses `<div class="model" data-model="...">` with one visible `<table class="t model-matrix">`. The table is the single source of truth: its first header cell names options, remaining headers name scenarios, row headers name options, and body cells contain all outcomes. `assets/model.js` reads those headers and cells to build prediction controls; it must not contain domain outcomes. Registry metadata declares model ID, owning chapter/section, and row/column dimensions only. `tools/verify.ps1` enforces registry-to-page identity, one rectangular matrix per model, non-empty headers/cells, runtime derivation, and JavaScript-disabled readability. Keep matrix and outcomes visible in native HTML; controls are optional enhancement.
+
 
 `assets/registry.js` directly assigns one `globalThis.LEARNING_SYSTEM` object in a classic script. It stores the certification manifest, objective registry, ordered chapter map, section archetypes, question contract, diagram catalogue, confusion sets, and study policy. It is author-side single source of truth, not a runtime dependency.
 
@@ -198,3 +205,45 @@ This is optional progressive enhancement, not content delivery. The visible text
 ### CSS contract
 
 Use shipped selectors without inline styles or new component names. `.tldr` extends `section.card` with an accent left border and compact list spacing. `.cal.myth` extends `.cal` with the myth border and tint tokens; its text label remains visible, so colour is not its only meaning. `.steps` removes the default list treatment, supplies numbered markers and a connector, and wraps each item in `details.more`. `.study-summary` styles the optional metrics, high-confidence miss list, copy controls, reset controls, and read-only textarea; print rules hide study controls without hiding answers.
+
+
+### Interactive learning model
+
+A model is an optional interactive prediction layer around a static matrix. Copy this shape exactly; replace labels and values, but keep one corner header, scenario headers, row headers, and a rectangular body:
+
+```html
+<div class="model" data-model="example-id" data-model-rows="Option" data-model-cols="Scenario">
+  <div class="tw"><table class="t model-matrix">
+    <thead><tr><th scope="col">Option</th><th scope="col">Scenario A</th><th scope="col">Scenario B</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Choice A</th><td>Outcome one</td><td>Outcome two</td></tr>
+      <tr><th scope="row">Choice B</th><td>Outcome two</td><td>Outcome one</td></tr>
+    </tbody>
+  </table></div>
+</div>
+```
+
+The static table is the single source of truth: `th[scope=col]` names scenarios, `th[scope=row]` names options, and each cell is the outcome. Keep every body row rectangular, with one row header plus one cell per scenario; keep cells non-empty and use 2-5 distinct outcome values. The harness reads this table to derive option chips, scenario chips, prediction choices, and verdicts. Do not copy domain facts into `assets/model.js`. This rule exists because a widget that hardcodes facts can silently disagree with the notes while still looking correct.
+
+The interaction asks for a prediction before revealing the selected cell. This supports the generation effect: retrieving or generating an answer before seeing it strengthens learning more than passive reading. With JavaScript disabled, the table and all outcomes remain ordinary visible HTML; interaction is enhancement, never content delivery. Do not add CSS that hides `.model-matrix` or any table inside `[data-model]`.
+
+Each model page loads exactly one trailing classic script after `study.js`:
+
+```html
+<script src="../../assets/study.js"></script>
+<script src="../../assets/model.js"></script>
+```
+
+### Offline favicon and page description
+
+Every HTML page has exactly one offline favicon link. Use an inline SVG data URI beginning with `data:image/svg+xml,`; encode markup characters for an attribute value. Never use an `http` or `https` favicon URL or any other remote asset:
+
+```html
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23d97757'/%3E%3Cpath d='M4 4h8v8H4z' fill='%23141413'/%3E%3C/svg%3E">
+```
+
+Every page also has exactly one non-empty, page-specific description in its head. Keep descriptions unique across pages and concise enough to describe that page's learning goal:
+
+```html
+<meta name="description" content="AZ-900 notes on Azure storage services, tiers, redundancy, and transfer tools.">
+```

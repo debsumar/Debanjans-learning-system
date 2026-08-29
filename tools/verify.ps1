@@ -326,7 +326,7 @@ foreach ($path in $studyPagePaths) {
   $name = Split-Path -Leaf $path
   if ($null -eq $text) { $studyPass = $false; Write-Host ('  study page missing: ' + $path); continue }
   $studyPages++
-  $scripts = @([regex]::Matches($text, 'assets/study\.js')).Count; $mounts = @([regex]::Matches($text, 'id="study-summary"')).Count; $trailing = $text -match 'assets/study\.js"\s*>\s*</script>\s*</body>'
+  $scripts = @([regex]::Matches($text, 'assets/study\.js')).Count; $mounts = @([regex]::Matches($text, 'id="study-summary"')).Count; $trailing = $text -match 'assets/study\.js"\s*>\s*</script>\s*(?:<script\s+src="\.\./\.\./assets/model\.js"></script>\s*)?</body>'
   if ($scripts -ne 1 -or $mounts -ne 1 -or -not $trailing) { $studyPass = $false; Write-Host ("  study contract {0}: scripts={1}, mounts={2}, trailing={3}" -f $name, $scripts, $mounts, $trailing) }
 }
 $studyText = Read-Text $studyPath
@@ -346,7 +346,59 @@ if ($null -ne $studyText) {
 if ($null -eq $studyText) { $studyPass = $false; Write-Host '  study.js missing or unreadable' } elseif (-not $studySyntaxPass) { $studyPass = $false }
 Add-Check 'study contract' ($studyPass -and $studyPages -eq 13) $studyPages '11 chapters, review, and hub each have one mount and one trailing classic study script; syntax is classic and local-only'
 
-$componentNames = @('tldr', 'myth', 'steps', 'glossary-link', 'study-brief')
+$modelContractPass = $registryLoaded; $modelContractCount = 0; $modelCellCount = 0; $modelFailures = @()
+$modelRecords = @()
+$modelRuntimeText = Read-Text (Join-Path $assetRoot 'model.js')
+if (-not $registryLoaded -or $registryText -notmatch 'interactiveModel\s*:') {
+  $modelContractPass = $false; $modelFailures += 'interactiveModel declaration missing'
+} else {
+  $modelBlock = [regex]::Match($registryText, 'interactiveModel\s*:\s*\{([\s\S]*?)\n\s*\},\s*\n\s*/\* 7\. QUESTION SCHEMA').Groups[1].Value
+  if ([string]::IsNullOrWhiteSpace($modelBlock)) { $modelContractPass = $false; $modelFailures += 'interactiveModel block unreadable' }
+  foreach ($m in [regex]::Matches($modelBlock, '\{\s*id:\s*"([^"]+)"\s*,\s*chapter:\s*"([^"]+)"\s*,\s*section:\s*"([^"]+)"\s*,\s*rowCount:\s*(\d+)\s*,\s*columnCount:\s*(\d+)\s*\}')) {
+    $modelRecords += [pscustomobject]@{ Id = $m.Groups[1].Value; Chapter = $m.Groups[2].Value; Section = $m.Groups[3].Value; Rows = [int]$m.Groups[4].Value; Columns = [int]$m.Groups[5].Value }
+  }
+  if ($modelRecords.Count -ne 3) { $modelContractPass = $false; $modelFailures += ('registered models=' + $modelRecords.Count + ', expected=3') }
+  if ($modelBlock -notmatch 'sourceOfTruth:\s*"Static HTML table\.model-matrix') { $modelContractPass = $false; $modelFailures += 'static source-of-truth declaration missing' }
+  if ($modelBlock -notmatch 'Registry declares identity and dimensions, not outcome values') { $modelContractPass = $false; $modelFailures += 'registry value-boundary declaration missing' }
+}
+if ($null -eq $modelRuntimeText) {
+  $modelContractPass = $false; $modelFailures += 'assets/model.js missing'
+} else {
+  if ($modelRuntimeText -notmatch 'querySelector\("table\.model-matrix"\)') { $modelContractPass = $false; $modelFailures += 'runtime does not read table.model-matrix' }
+  if ($modelRuntimeText -notmatch 'outcomes:\s*cells\.map\(text\)') { $modelContractPass = $false; $modelFailures += 'runtime does not derive outcomes from matrix cells' }
+  if ($modelRuntimeText -match 'outcomes\s*=\s*\[\s*"') { $modelContractPass = $false; $modelFailures += 'runtime contains hard-coded outcome array' }
+}
+foreach ($model in $modelRecords) {
+  $modelContractCount++
+  $chapterRecord = @($registryChapters | Where-Object Id -eq $model.Chapter)
+  if ($chapterRecord.Count -ne 1) { $modelContractPass = $false; $modelFailures += ($model.Id + ': chapter not in registry'); continue }
+  $chapterText = Read-Text (Join-Path $topicRoot $chapterRecord[0].File)
+  if ($null -eq $chapterText) { $modelContractPass = $false; $modelFailures += ($model.Id + ': chapter file missing'); continue }
+  $sectionMatch = [regex]::Match($chapterText, '<section\b[^>]*\bid="' + [regex]::Escape($model.Section) + '"[\s\S]*?</section>')
+  if (-not $sectionMatch.Success) { $modelContractPass = $false; $modelFailures += ($model.Id + ': section missing'); continue }
+  $sectionText = $sectionMatch.Value
+  $modelDivs = @([regex]::Matches($sectionText, '<div\b(?=[^>]*\bclass="[^"]*\bmodel\b[^"]*")(?=[^>]*\bdata-model="' + [regex]::Escape($model.Id) + '")[^>]*>'))
+  if ($modelDivs.Count -ne 1) { $modelContractPass = $false; $modelFailures += ($model.Id + ': model div count=' + $modelDivs.Count); continue }
+  $matrixMatches = @([regex]::Matches($sectionText, '<table\b(?=[^>]*\bclass="[^"]*\bmodel-matrix\b[^"]*")[^>]*>[\s\S]*?</table>'))
+  if ($matrixMatches.Count -ne 1) { $modelContractPass = $false; $modelFailures += ($model.Id + ': matrix table count=' + $matrixMatches.Count); continue }
+  $matrix = $matrixMatches[0].Value
+  $headMatch = [regex]::Match($matrix, '<thead\b[\s\S]*?</thead>')
+  $headerCells = if ($headMatch.Success) { @([regex]::Matches($headMatch.Value, '<(?:th|td)\b[^>]*>([\s\S]*?)</(?:th|td)>')) } else { @() }
+  $bodyMatch = [regex]::Match($matrix, '<tbody\b[\s\S]*?</tbody>')
+  $rows = if ($bodyMatch.Success) { @([regex]::Matches($bodyMatch.Value, '<tr\b[\s\S]*?</tr>')) } else { @() }
+  if ($headerCells.Count -ne ($model.Columns + 1)) { $modelContractPass = $false; $modelFailures += ($model.Id + ': header cells=' + $headerCells.Count + ', expected=' + ($model.Columns + 1)) }
+  if ($rows.Count -ne $model.Rows) { $modelContractPass = $false; $modelFailures += ($model.Id + ': rows=' + $rows.Count + ', expected=' + $model.Rows) }
+  foreach ($row in $rows) {
+    $cells = @([regex]::Matches($row.Value, '<(?:th|td)\b[^>]*>([\s\S]*?)</(?:th|td)>'))
+    if ($cells.Count -ne ($model.Columns + 1)) { $modelContractPass = $false; $modelFailures += ($model.Id + ': row cells=' + $cells.Count + ', expected=' + ($model.Columns + 1)) }
+    foreach ($cell in $cells) { $cellText = [regex]::Replace($cell.Groups[1].Value, '<[^>]+>', '').Trim(); if ([string]::IsNullOrWhiteSpace($cellText)) { $modelContractPass = $false; $modelFailures += ($model.Id + ': empty matrix cell') } else { $modelCellCount++ } }
+  }
+  foreach ($cell in $headerCells) { $headerText = [regex]::Replace($cell.Groups[1].Value, '<[^>]+>', '').Trim(); if ([string]::IsNullOrWhiteSpace($headerText)) { $modelContractPass = $false; $modelFailures += ($model.Id + ': empty matrix header') } }
+}
+if ($modelFailures.Count) { Write-Host ('  interactive model contract: ' + ($modelFailures -join '; ')) }
+Add-Check 'interactive model contract' $modelContractPass $modelContractCount ("registered={0}, nonempty-static-cells={1}; matrix is sole outcome source" -f $modelContractCount, $modelCellCount)
+
+$componentNames = @('tldr', 'myth', 'steps', 'glossary-link', 'study-brief', 'model')
 $componentPass = $registryLoaded; $componentHits = 0
 if ($registryLoaded) {
   foreach ($name in $componentNames) {
@@ -359,7 +411,7 @@ if ($registryLoaded) {
   $invariantCount = @([regex]::Matches($registryText, '\binvariants\s*:')).Count
   if ($requiredMarkupCount -lt 5 -or $invariantCount -lt 5) { $componentPass = $false; Write-Host ("  component catalogue contracts incomplete: markup={0}, invariants={1}" -f $requiredMarkupCount, $invariantCount) }
 }
-Add-Check 'component catalogue' ($componentPass -and $componentHits -eq $componentNames.Count) $componentHits 'tldr, myth, steps, glossary-link, and study-brief declare markup and invariants'
+Add-Check 'component catalogue' ($componentPass -and $componentHits -eq $componentNames.Count) $componentHits 'tldr, myth, steps, glossary-link, study-brief, and model declare markup and invariants'
 
 $tldrPass = $true; $tldrPages = 0; $tldrCount = 0; $tldrLiTotal = 0
 foreach ($chapter in $registryChapters) {
@@ -489,6 +541,173 @@ $hiddenStudyClasses = @($hiddenStudyClasses | Select-Object -Unique)
 $progressPass = $progressPass -and $hiddenAnswerCount -eq 0 -and $missingSummaryCount -eq 0
 Add-Check 'progressive enhancement' $progressPass $answerCount ("answer-bearing items={0}, missing-summary={1}, answer-hidden-by-study-css={2}, study-hidden-control-rules={3}; readable with JS off" -f $answerCount, $missingSummaryCount, $hiddenAnswerCount, $hiddenStudyClasses.Count)
 if ($hiddenStudyClasses.Count -eq 0) { Add-Skip 'progressive enhancement CSS proof' 1 'no CSS rule hides content using classes added by study.js' }
+
+$modelJsPath = Join-Path $assetRoot 'model.js'
+$modelText = Read-Text $modelJsPath
+$modelRecords = @()
+$modelMarkerCount = 0
+$modelContractPass = $registryLoaded
+$modelBlockPattern = '<div\b(?=[^>]*\bdata-model\s*=\s*["''][^"'']+["''])[^>]*>(?:(?<modelDepth><div\b[^>]*>)|(?<-modelDepth></div>)|(?!<div\b|</div>)[\s\S])*(?(modelDepth)(?!))</div>'
+foreach ($file in $htmlFiles) {
+  $text = Read-Text $file.FullName
+  if ($null -eq $text) { $modelContractPass = $false; continue }
+  $markers = @([regex]::Matches($text, '\bdata-model\s*=\s*["'']'))
+  $modelMarkerCount += $markers.Count
+  $blocks = @([regex]::Matches($text, $modelBlockPattern))
+  if ($blocks.Count -ne $markers.Count) {
+    $modelContractPass = $false
+    Write-Host ("  model wrapper parse mismatch {0}: markers={1}, wrappers={2}" -f $file.Name, $markers.Count, $blocks.Count)
+  }
+  foreach ($blockMatch in $blocks) {
+    $block = $blockMatch.Value
+    $openEnd = $block.IndexOf('>')
+    $openTag = if ($openEnd -ge 0) { $block.Substring(0, $openEnd + 1) } else { '' }
+    $idMatch = [regex]::Match($openTag, '\bdata-model\s*=\s*["'']([^"'']+)["'']')
+    $id = if ($idMatch.Success) { $idMatch.Groups[1].Value } else { '' }
+    $tables = @([regex]::Matches($block, '<table\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\bmodel-matrix\b[^"'']*["''])[^>]*>[\s\S]*?</table>'))
+    $shapePass = $tables.Count -eq 1
+    $outcomes = @()
+    $rowCount = 0; $scenarioCount = 0
+    if ($tables.Count -eq 1) {
+      $table = $tables[0].Value
+      $thead = @([regex]::Matches($table, '<thead\b[^>]*>[\s\S]*?</thead>'))
+      $headerRows = if ($thead.Count -eq 1) { @([regex]::Matches($thead[0].Value, '<tr\b[^>]*>[\s\S]*?</tr>')) } else { @() }
+      $headerCells = if ($headerRows.Count -eq 1) { @([regex]::Matches($headerRows[0].Value, '<th\b[^>]*\bscope\s*=\s*["'']col["''][^>]*>[\s\S]*?</th>')) } else { @() }
+      $allHeaderCells = if ($headerRows.Count -eq 1) { @([regex]::Matches($headerRows[0].Value, '<(?:th|td)\b[^>]*>[\s\S]*?</(?:th|td)>')) } else { @() }
+      $scenarioCount = $headerCells.Count - 1
+      $tbody = @([regex]::Matches($table, '<tbody\b[^>]*>[\s\S]*?</tbody>'))
+      $bodyRows = if ($tbody.Count -eq 1) { @([regex]::Matches($tbody[0].Value, '<tr\b[^>]*>[\s\S]*?</tr>')) } else { @() }
+      $rowCount = $bodyRows.Count
+      if ($thead.Count -ne 1 -or $headerRows.Count -ne 1 -or $headerCells.Count -ne $allHeaderCells.Count -or $scenarioCount -lt 1 -or $tbody.Count -ne 1 -or $rowCount -lt 2) { $shapePass = $false }
+      foreach ($rowMatch in $bodyRows) {
+        $row = $rowMatch.Value
+        $cells = @([regex]::Matches($row, '<(?:th|td)\b[^>]*>[\s\S]*?</(?:th|td)>'))
+        $rowHeaders = @([regex]::Matches($row, '<th\b[^>]*\bscope\s*=\s*["'']row["''][^>]*>[\s\S]*?</th>'))
+        $outcomeCells = @([regex]::Matches($row, '<td\b[^>]*>[\s\S]*?</td>'))
+        if ($cells.Count -ne $headerCells.Count -or $rowHeaders.Count -ne 1 -or $outcomeCells.Count -ne $scenarioCount) { $shapePass = $false }
+        foreach ($cell in $outcomeCells) {
+          $value = [regex]::Replace($cell.Value, '<[^>]+>', '') -replace '\s+', ' '
+          $value = $value.Trim()
+          $outcomes += $value
+          if ([string]::IsNullOrWhiteSpace($value)) { $shapePass = $false }
+        }
+      }
+    }
+    if (-not $shapePass) {
+      $modelContractPass = $false
+      Write-Host ("  model matrix contract failed: {0} ({1})" -f $file.Name, $(if ($id) { $id } else { 'unknown-id' }))
+    }
+    $modelRecords += [pscustomobject]@{ Id = $id; Page = $file.Name; Path = $file.FullName; Rows = $rowCount; Cols = $scenarioCount; Outcomes = @($outcomes); ShapePass = $shapePass }
+  }
+}
+$ids = @($modelRecords | ForEach-Object Id)
+if ($modelMarkerCount -ne 3 -or $modelRecords.Count -ne 3 -or @($ids | Select-Object -Unique).Count -ne $modelRecords.Count) {
+  $modelContractPass = $false
+  Write-Host ("  shipped model count/id contract: markers={0}, parsed={1}, unique-ids={2}; expected 3" -f $modelMarkerCount, $modelRecords.Count, @($ids | Select-Object -Unique).Count)
+}
+Add-Check 'model contract' $modelContractPass $modelRecords.Count 'every data-model wrapper has one rectangular model-matrix with scoped headers and at least 2 rows'
+
+$modelOutcomePass = $modelRecords.Count -eq 3
+foreach ($record in $modelRecords) {
+  $distinct = @($record.Outcomes | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+  Write-Host ("  model outcomes {0}: [{1}]" -f $record.Id, ($distinct -join ', '))
+  if (-not $record.ShapePass -or $record.Outcomes.Count -eq 0 -or $distinct.Count -lt 2 -or $distinct.Count -gt 5 -or @($record.Outcomes | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
+    $modelOutcomePass = $false
+    Write-Host ("  model outcome vocabulary failed: {0}; distinct={1}, cells={2}" -f $record.Id, $distinct.Count, $record.Outcomes.Count)
+  }
+}
+Add-Check 'model outcome vocabulary' $modelOutcomePass $modelRecords.Count 'each model reports 2-5 distinct non-empty outcomes'
+
+$modelScriptPass = $true; $modelPageCount = 0; $modelScriptRefs = 0
+foreach ($file in $htmlFiles) {
+  $text = Read-Text $file.FullName
+  if ($null -eq $text) { $modelScriptPass = $false; continue }
+  $hasModel = $text -match '\bdata-model\s*='
+  $modelRefs = @([regex]::Matches($text, '<script\b[^>]*\bsrc\s*=\s*["''][^"'']*model\.js[^"'']*["''][^>]*>\s*</script>'))
+  $exactRefs = @([regex]::Matches($text, '<script\b[^>]*\bsrc\s*=\s*["'']\.\./\.\./assets/model\.js["''][^>]*>\s*</script>'))
+  $modelScriptRefs += $modelRefs.Count
+  if ($hasModel) {
+    $modelPageCount++
+    $studyIndex = $text.LastIndexOf('<script src="../../assets/study.js"></script>')
+    $modelIndex = $text.LastIndexOf('<script src="../../assets/model.js"></script>')
+    $trailing = $text -match '(?s)<script\s+src="\.\./\.\./assets/model\.js"></script>\s*</body>'
+    $classic = $modelRefs.Count -gt 0 -and $modelRefs.Value -notmatch '(?i)\btype\s*=\s*["'']module["'']'
+    if ($modelRefs.Count -ne 1 -or $exactRefs.Count -ne 1 -or $studyIndex -lt 0 -or $modelIndex -le $studyIndex -or -not $trailing -or -not $classic) {
+      $modelScriptPass = $false
+      Write-Host ("  model script contract failed: {0}: refs={1}, exact={2}, after-study={3}, trailing={4}, classic={5}" -f $file.Name, $modelRefs.Count, $exactRefs.Count, ($modelIndex -gt $studyIndex), $trailing, $classic)
+    }
+  } elseif ($modelRefs.Count -ne 0) {
+    $modelScriptPass = $false
+    Write-Host ('  page without model loads model.js: ' + $file.Name)
+  }
+}
+$modelScriptPass = $modelScriptPass -and $modelPageCount -eq $modelRecords.Count -and $modelPageCount -eq 3
+Add-Check 'model script contract' $modelScriptPass $modelScriptRefs 'model pages load one trailing classic model.js after study.js; other pages do not load it'
+
+$modelProgressPass = $null -ne $modelText
+$hiddenModelRules = @(); $modelFactStrings = @()
+foreach ($record in $modelRecords) { $modelFactStrings += $record.Outcomes }
+$modelFactStrings = @($modelFactStrings | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+$progressCss = @()
+if (Test-Path -LiteralPath $assetRoot -PathType Container) { $progressCss += @(Get-ChildItem -LiteralPath $assetRoot -Filter '*.css' -File) }
+if (Test-Path -LiteralPath $topicRoot -PathType Container) { $progressCss += @(Get-ChildItem -LiteralPath $topicRoot -Filter '*.css' -File) }
+foreach ($css in $progressCss) {
+  $cssText = Read-Text $css.FullName
+  if ($null -eq $cssText) { $modelProgressPass = $false; continue }
+  foreach ($rule in [regex]::Matches($cssText, '([^{}]+)\{([^{}]*)\}')) {
+    $selector = $rule.Groups[1].Value; $declarations = $rule.Groups[2].Value
+    if ($selector -match '(?i)\.model-matrix\b|\[data-model\]' -and $declarations -match '(?i)display\s*:\s*none|visibility\s*:\s*hidden|content-visibility\s*:\s*hidden') {
+      $hiddenModelRules += ($css.Name + ': ' + $selector.Trim())
+    }
+  }
+}
+if ($hiddenModelRules.Count) { $modelProgressPass = $false; Write-Host ('  model table hidden by CSS: ' + ($hiddenModelRules -join ' | ')) }
+if ($null -eq $modelText) { Write-Host '  model.js missing or unreadable' } else {
+  foreach ($fact in $modelFactStrings) {
+    if ($modelText.IndexOf($fact, [StringComparison]::Ordinal) -ge 0) { $modelProgressPass = $false; Write-Host ('  matrix outcome string found in model.js: ' + $fact) }
+  }
+}
+Add-Check 'model progressive enhancement' $modelProgressPass $progressCss.Count ("model.js has no matrix facts; model tables are not hidden; css-files={0}, hidden-rules={1}, matrix-facts={2}" -f $progressCss.Count, $hiddenModelRules.Count, $modelFactStrings.Count)
+
+$modelEsPass = $false; $modelVarCount = 0; $modelModuleCount = 0; $modelFetchCount = 0
+if ($null -ne $modelText) {
+  $modelCode = [regex]::Replace($modelText, '(?s)/\*.*?\*/', '')
+  $modelCode = [regex]::Replace($modelCode, '(?m)//[^\r\n]*', '')
+  $modelModuleCount = @([regex]::Matches($modelCode, '(?m)^\s*(?:import|export)\b')).Count
+  $modelFetchCount = @([regex]::Matches($modelCode, '(?m)(?<![\w$])(?:[\w$]+\.)*fetch\s*\(')).Count
+  $modelVarCount = @([regex]::Matches($modelCode, '\bvar\b')).Count
+  $modelEsPass = $modelModuleCount -eq 0 -and $modelFetchCount -eq 0 -and $modelVarCount -eq 0
+  if (-not $modelEsPass) { Write-Host ("  model.js forbidden syntax: module={0}, fetch={1}, var={2}" -f $modelModuleCount, $modelFetchCount, $modelVarCount) }
+}
+Add-Check 'model.js ES2026 classic discipline' $modelEsPass 1 ("model.js classic/no var/no module/no fetch; module={0}, fetch={1}, var={2}" -f $modelModuleCount, $modelFetchCount, $modelVarCount)
+
+$faviconPass = $htmlFiles.Count -gt 0; $faviconPageCount = 0; $faviconLinks = 0; $descriptionPageCount = 0; $descriptionTags = 0; $descriptionSeen = @{}
+foreach ($file in $htmlFiles) {
+  $text = Read-Text $file.FullName
+  if ($null -eq $text) { $faviconPass = $false; continue }
+  $icons = @([regex]::Matches($text, '<link\b(?=[^>]*\brel\s*=\s*["'']icon["''])[^>]*>'))
+  $faviconLinks += $icons.Count
+  if ($icons.Count -ne 1) { $faviconPass = $false; Write-Host ("  favicon count {0}: {1}" -f $file.Name, $icons.Count) }
+  foreach ($icon in $icons) {
+    $href = [regex]::Match($icon.Value, '\bhref\s*=\s*["'']([^"'']+)["'']')
+    if (-not $href.Success -or -not $href.Groups[1].Value.StartsWith('data:image/svg+xml,', [StringComparison]::Ordinal) -or $href.Groups[1].Value.StartsWith('http', [StringComparison]::OrdinalIgnoreCase)) {
+      $faviconPass = $false; Write-Host ('  favicon is not an offline SVG data URI: ' + $file.Name)
+    } else { $faviconPageCount++ }
+  }
+  $descriptions = @([regex]::Matches($text, '<meta\b(?=[^>]*\bname\s*=\s*["'']description["''])[^>]*>'))
+  $descriptionTags += $descriptions.Count
+  if ($descriptions.Count -ne 1) { $faviconPass = $false; Write-Host ("  description count {0}: {1}" -f $file.Name, $descriptions.Count) }
+  foreach ($description in $descriptions) {
+    $content = [regex]::Match($description.Value, '\bcontent\s*=\s*["'']([^"'']*)["'']')
+    if (-not $content.Success -or [string]::IsNullOrWhiteSpace($content.Groups[1].Value)) { $faviconPass = $false; Write-Host ('  empty description: ' + $file.Name); continue }
+    $descriptionPageCount++
+    $value = $content.Groups[1].Value
+    if ($descriptionSeen.ContainsKey($value)) { $faviconPass = $false; Write-Host ("  duplicate description: {0} and {1}" -f $descriptionSeen[$value], $file.Name) } else { $descriptionSeen[$value] = $file.Name }
+  }
+}
+$faviconPass = $faviconPass -and $faviconPageCount -eq $htmlFiles.Count -and $descriptionPageCount -eq $htmlFiles.Count -and $descriptionSeen.Count -eq $htmlFiles.Count
+Add-Check 'favicon and description contract' $faviconPass $htmlFiles.Count ("pages={0}, favicon-pages={1}, icon-links={2}, descriptions={3}, unique-descriptions={4}; offline SVG data URIs" -f $htmlFiles.Count, $faviconPageCount, $faviconLinks, $descriptionTags, $descriptionSeen.Count)
+
 
 $esPass = $true; $jsCount = 0; $varCount = 0; $moduleCount = 0
 $jsFiles = if (Test-Path -LiteralPath $assetRoot -PathType Container) { @(Get-ChildItem -LiteralPath $assetRoot -Filter '*.js' -File) } else { @() }

@@ -52,4 +52,11 @@ HTML owns wording, order, and markup. CSS owns `.tldr`, `.cal.myth`, and `.steps
 
 The portable study brief is derived data, not authored chapter content. `study.js` reads `data-objective` and local study records, ranks objective results by miss rate, marks high-confidence misses, and writes Markdown to the visible textarea. Clipboard copying is only a convenience; the textarea remains the reliable `file://` path. Per-file-URL `localStorage` means disk-opened pages keep separate state, while the hosted copy shares state across its pages.
 
+## Interactive outcome models
+
+Interactive prediction models are optional progressive enhancement. The static HTML `table.model-matrix` is the single source of truth for scenario headers, option row labels, and every outcome cell; JavaScript may only derive controls and prediction feedback from that table. `assets/registry.js` declares model identity, owning chapter and section, and rectangular dimensions, but never duplicates outcome values. `assets/model.js` reads `table.model-matrix`, and each model remains readable with JavaScript disabled. `tools/verify.ps1` checks registry-to-page identity, one matrix per model, dimensions, non-empty headers/cells, and runtime derivation from matrix cells.
+
+A model contract does not replace visible answers. Keep the matrix in native table markup, keep controls optional, and do not add domain outcomes to JavaScript or registry metadata.
+
+
 These checks prove shape and linkage, not teaching quality. Human review still decides whether a TL;DR boundary is accurate, a myth closes a real inference, a steps list represents causality, a glossary link is first-use and substantive, or an objective tag reflects what recall tests.

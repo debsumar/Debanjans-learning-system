@@ -151,10 +151,34 @@ globalThis.LEARNING_SYSTEM = {
       purpose: "Portable study brief and due-review copy controls.",
       requiredMarkup: "study.js builds a brief and renders Copy study brief and Copy due-review list controls.",
       invariants: ["Classic optional script only.", "No module syntax, network call, or variable declaration."]
+    },
+    model: {
+      purpose: "Interactive prediction model backed by one readable static outcome matrix.",
+      requiredMarkup: "div.model[data-model][data-model-rows][data-model-cols] containing div.tw and one table.t.model-matrix.",
+      invariants: ["Matrix is the single source of truth; harness derives interaction from its headers, row headers, and cells.", "JavaScript hardcodes no domain facts; model.js loads after study.js.", "Matrix is rectangular and has at least 2 option rows.", "Matrix has 2-5 distinct non-empty outcome values.", "Table remains visible and readable with JavaScript disabled."],
+      shipped: [
+        { dataModel: "storage-redundancy", chapter: "c06", page: "06-storage.html", rows: 4, cols: 3 },
+        { dataModel: "vm-resilience", chapter: "c05", page: "05-compute-networking.html", rows: 4, cols: 3 },
+        { dataModel: "governance-inheritance", chapter: "c09", page: "09-governance-compliance.html", rows: 4, cols: 4 }
+      ]
     }
   },
 
-  /* 6. QUESTION SCHEMA. Existing pages supply items; registry declares contract only. */
+  /* 6. INTERACTIVE MODEL CONTRACT. HTML matrices own all outcome values. */
+  interactiveModel: {
+    purpose: "Optional prediction controls read static outcome matrices; pages remain complete with JavaScript disabled.",
+    sourceOfTruth: "Static HTML table.model-matrix headers, row labels, and cells.",
+    script: "assets/model.js",
+    requiredMarkup: "div.model[data-model] containing exactly one table.model-matrix with one header row and a tbody.",
+    invariants: ["Every registered model maps to one chapter section and one data-model value.", "Registry declares identity and dimensions, not outcome values.", "model.js derives options, scenarios, and outcomes from table.model-matrix cells.", "No model control is required for reading or revealing static table outcomes with JavaScript disabled."],
+    models: [
+      { id: "vm-resilience", chapter: "c05", section: "hosting", rowCount: 4, columnCount: 3 },
+      { id: "storage-redundancy", chapter: "c06", section: "redundancy", rowCount: 4, columnCount: 3 },
+      { id: "governance-inheritance", chapter: "c09", section: "discrimination", rowCount: 4, columnCount: 4 }
+    ]
+  },
+
+  /* 7. QUESTION SCHEMA. Existing pages supply items; registry declares contract only. */
   questionSchema: {
     requiredFields: ["itemId", "objectiveIds", "bloom", "stem", "options", "key", "keyRationale", "distractorRationales"],
     bloom: ["remember", "understand", "apply", "analyze"],
@@ -173,7 +197,7 @@ globalThis.LEARNING_SYSTEM = {
     }
   },
 
-  /* 7. DIAGRAM CATALOGUE. Fifteen diagrams, seven archetypes. */
+  /* 8. DIAGRAM CATALOGUE. Fifteen diagrams, seven archetypes. */
   diagramCatalogue: {
     archetypes: {
       "flow-chain": {
@@ -221,7 +245,7 @@ globalThis.LEARNING_SYSTEM = {
     }
   },
 
-  /* 8. CONFUSION SETS. calloutChapter is source truth; hubLinkTarget is resolved target. */
+  /* 9. CONFUSION SETS. calloutChapter is source truth; hubLinkTarget is resolved target. */
   confusionSets: [
     { id: "policy-rbac-locks", discriminator: "Policy enforces standards; RBAC grants actions; locks block deletion or changes.", objectiveIds: ["az900-c07-o5", "az900-c09-o2", "az900-c09-o3"], calloutChapter: "c09", hubLinkTarget: "09-governance-compliance.html#discrimination" },
     { id: "monitor-advisor-service-health", discriminator: "Monitor observes workloads; Advisor recommends; Service Health reports Azure incidents and maintenance.", objectiveIds: ["az900-c11-o1", "az900-c11-o2", "az900-c11-o3"], calloutChapter: "c11", hubLinkTarget: "11-monitoring.html#trio" },

@@ -8,7 +8,7 @@ Use this runbook to add one self-contained topic without duplicating platform CS
 4. Create chapter pages using depth-2 head block and top-bar navigation below.
 5. Add one card to root `index.html`. This is the intentional manual platform exception: launcher must expose topic, while shared platform files stay untouched.
 6. Add `review.html` for interleaved practice and `glossary.html` for searchable canonical definitions when the topic supports them. Keep the depth-2 shell, relative assets, and static readability.
-7. Build the seven registry layers from [`docs/BLUEPRINT.md`](BLUEPRINT.md): certification manifest, objective registry, chapter map, section archetypes, question schema/count contract, diagram catalogue/geometry rules, and confusion sets. Keep study policy as the cross-cutting review policy. Record real page counts, filenames, titles, domains, weights, accents, hub path, description, and pill labels.
+7. Build the seven registry layers from [`docs/BLUEPRINT.md`](BLUEPRINT.md): certification manifest, objective registry, chapter map, section archetypes, question schema/count contract, diagram catalogue/geometry rules, and confusion sets. Keep study policy as the cross-cutting review policy. If adding an interactive model, declare its ID, chapter, section, and matrix dimensions in the registry only; keep every scenario header, option label, and outcome in one visible static `table.model-matrix`. Record real page counts, filenames, titles, domains, weights, accents, hub path, description, and pill labels.
 8. Check every page is ASCII-only. Use HTML entities for punctuation.
 9. Run `tools/verify.ps1`; fix every FAIL before handoff. The verifier checks objective coverage, question IDs/counts, skills IDs, confusion targets, SVG geometry, study contract, progressive enhancement, and classic-script discipline.
 10. Open root, hub, review, glossary, and chapter files directly from disk. Check dark/light rendering, labels, focus, anchors, navigation, and JavaScript-disabled readability.
@@ -33,7 +33,9 @@ Copy exactly for pages inside `topics/<slug>/`:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="[One ASCII sentence describing page contents.]">
 <title>[Topic page title]</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d97757' d='M2 4l6-2 6 2-6 2-6-2Zm0 3 6 2 6-2v3l-6 2-6-2V7Z'/%3E%3C/svg%3E">
 <script src="../../assets/theme.js"></script>
 <link rel="stylesheet" href="../../assets/theme.css">
 <link rel="stylesheet" href="topic.css">

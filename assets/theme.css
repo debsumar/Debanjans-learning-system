@@ -194,7 +194,24 @@ details.more.study-mastered { border-color: var(--good); background: var(--good-
   table.t { min-width: 0; }
   table.t th, table.t td { border: 1px solid var(--border); }
   .tw { overflow: visible; }
+  .model-controls, .model-predict, .model-verdict { display: none !important; }
 }
+
+.model { margin: 18px 0; }
+.model-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0 8px; padding: 8px 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); }
+.model-group { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.model-label { color: var(--muted); font-size: .78rem; font-weight: 600; }
+.model-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.model-chip, .model-reset, .model-predict button { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; min-height: 24px; padding: 4px 10px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 999px; font: inherit; font-size: .8rem; cursor: pointer; }
+.model-chip:hover, .model-reset:hover, .model-predict button:hover { color: var(--accent); border-color: var(--accent); }
+.model-chip[aria-pressed="true"] { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.model-reset { margin-left: auto; color: var(--muted); }
+.model-predict { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin: 8px 0; padding: 7px 9px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); }
+.model-predict .model-skip { color: var(--muted); }
+.model-verdict { border-left: 3px solid var(--accent); background: var(--accent-dim); padding: 8px 11px; margin: 8px 0 12px; font-family: var(--font); font-weight: 600; }
+.model-matrix th.is-selected, .model-matrix tbody tr.is-selected > th { background: var(--accent-dim); color: var(--accent); }
+.model-matrix td.is-hit { background: var(--accent-dim); outline: 2px solid var(--accent); outline-offset: -2px; font-weight: 600; }
+.model-controls[hidden], .model-predict[hidden], .model-verdict[hidden] { display: none; }
 
 /* Study controls reuse shared pill language and remain keyboard/touch friendly. */
 .study-row .theme-toggle.pill { min-width: 24px; min-height: 24px; }

@@ -19,7 +19,9 @@ Use this exact head block for a page at `topics/<slug>/<page>.html`:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="[One ASCII sentence describing page contents.]">
 <title>[Topic page title]</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d97757' d='M2 4l6-2 6 2-6 2-6-2Zm0 3 6 2 6-2v3l-6 2-6-2V7Z'/%3E%3C/svg%3E">
 <script src="../../assets/theme.js"></script>
 <link rel="stylesheet" href="../../assets/theme.css">
 <link rel="stylesheet" href="topic.css">
@@ -104,7 +106,10 @@ relative asset paths, unique IDs, shell order, table scopes, diagram labels,
 study mounts, trailing study script, and readable answers before handoff.
 
 
-## New learning components
+## Interactive outcome model
+
+Use optional model enhancement only when a static outcome matrix teaches a decision or comparison. Keep one visible `<table class="t model-matrix">` inside `<div class="model" data-model="...">`; first header cell names options, remaining headers name scenarios, row headers name options, and body cells contain outcomes. Static table is sole source of truth. Declare only model ID, owning chapter/section, and row/column dimensions in `assets/registry.js`; never duplicate outcome values there or in `assets/model.js`. Load `../../assets/model.js` after `study.js` when page uses model markup. `tools\verify.ps1` checks rectangular dimensions, non-empty cells, registry-to-page mapping, and runtime derivation. Matrix must remain visible and useful with JavaScript disabled.
+
 
 Use these exact shipped patterns. Read `docs/THEME.md`, `assets/theme.css`, and `assets/study.js` before authoring.
 
@@ -157,3 +162,43 @@ Every recall item must carry `data-objective` with one or more real registry ids
 ### Portable study brief
 
 Keep exactly one `<div id="study-summary"></div>` on every study-enabled page, before the trailing `study.js` script. `study.js` is optional progressive enhancement. It serialises study state to Markdown in a visible read-only textarea, ranking weak objectives by miss rate and marking high-confidence misses for LLM-targeted practice. Visible textarea is primary because clipboard access is unreliable under `file://`. `localStorage` is per file URL: disk-opened pages do not share state, hosted pages do. Never make content depend on the brief or on JavaScript.
+
+
+## Interactive learning model contract
+
+Use a model only when a page has a useful outcome prediction. Read `assets/model.js` and `assets/theme.css` first. Add this exact shape, replacing labels and values while preserving the structure:
+
+```html
+<div class="model" data-model="example-id" data-model-rows="Option" data-model-cols="Scenario">
+  <div class="tw"><table class="t model-matrix">
+    <thead><tr><th scope="col">Option</th><th scope="col">Scenario A</th><th scope="col">Scenario B</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Choice A</th><td>Outcome one</td><td>Outcome two</td></tr>
+      <tr><th scope="row">Choice B</th><td>Outcome two</td><td>Outcome one</td></tr>
+    </tbody>
+  </table></div>
+</div>
+```
+
+Contract: matrix is source of truth. Column headers are scenarios; row headers are options; cells are outcomes. Keep matrix rectangular, cells non-empty, at least 2 option rows, and 2-5 distinct outcomes. `model.js` derives controls and verdict from matrix and hardcodes no domain facts. This prevents a hardcoded widget from silently disagreeing with notes. Harness asks learner to predict before reveal to use generation effect: generating an answer strengthens retrieval more than passive reading. Static table stays visible and useful with JavaScript disabled; never hide `.model-matrix` or any model table with CSS.
+
+On model pages, load exactly one trailing classic script after study.js:
+
+```html
+<script src="../../assets/study.js"></script>
+<script src="../../assets/model.js"></script>
+```
+
+## Offline head metadata contract
+
+Add exactly one inline SVG data-URI favicon per page. Its `href` starts with `data:image/svg+xml,` and never uses a remote URL. Encode SVG markup for attribute-safe ASCII:
+
+```html
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23d97757'/%3E%3Cpath d='M4 4h8v8H4z' fill='%23141413'/%3E%3C/svg%3E">
+```
+
+Add exactly one non-empty, unique description for every page. Describe page-specific learning content; do not reuse one generic sentence:
+
+```html
+<meta name="description" content="AZ-900 notes on Azure storage services, tiers, redundancy, and transfer tools.">
+```
