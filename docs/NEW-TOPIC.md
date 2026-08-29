@@ -7,10 +7,13 @@ Use this runbook to add one self-contained topic without duplicating platform CS
 3. Create `topics/<slug>/index.html` as topic hub.
 4. Create chapter pages using depth-2 head block and top-bar navigation below.
 5. Add one card to root `index.html`. This is the intentional manual platform exception: launcher must expose topic, while shared platform files stay untouched.
-6. Add topic and ordered chapter metadata to `assets/registry.js`. Record real page counts, filenames, titles, domains, weights, hub path, accent tokens, description, and pill labels.
-7. Check every page is ASCII-only. Use HTML entities for punctuation.
-8. Run `tools/verify.ps1`. Fix every FAIL before handoff.
-9. Open root, hub, and chapter files directly from disk. Check dark/light rendering, labels, focus, anchors, and navigation.
+6. Add `review.html` for interleaved practice and `glossary.html` for searchable canonical definitions when the topic supports them. Keep the depth-2 shell, relative assets, and static readability.
+7. Build the seven registry layers from [`docs/BLUEPRINT.md`](BLUEPRINT.md): certification manifest, objective registry, chapter map, section archetypes, question schema/count contract, diagram catalogue/geometry rules, and confusion sets. Keep study policy as the cross-cutting review policy. Record real page counts, filenames, titles, domains, weights, accents, hub path, description, and pill labels.
+8. Check every page is ASCII-only. Use HTML entities for punctuation.
+9. Run `tools/verify.ps1`; fix every FAIL before handoff. The verifier checks objective coverage, question IDs/counts, skills IDs, confusion targets, SVG geometry, study contract, progressive enhancement, and classic-script discipline.
+10. Open root, hub, review, glossary, and chapter files directly from disk. Check dark/light rendering, labels, focus, anchors, navigation, and JavaScript-disabled readability.
+
+Read [`docs/BLUEPRINT.md`](BLUEPRINT.md) for data-layer sequence, DATA/TEMPLATE boundary, and extension guidance before changing registry metadata.
 
 ## Ownership boundary
 

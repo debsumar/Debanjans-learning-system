@@ -38,21 +38,46 @@
 <article class="card"><a href="11-monitoring.html"><h3><svg class="icon card-icon icon-pulse" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12h3.5L9 6l4 12 2.5-6H21"/></svg>11 &middot; Describe monitoring tools in Azure</h3><p>Monitor, Advisor, Service Health, alerts, logs, and metrics.</p></a></article>
 </div>
 </section>
+<section class="card" id="study-tools"><h2>Study tools</h2><p><a href="review.html">Interleaved review</a> mixes the ten high-confusion sets with new cross-chapter scenarios. <a href="glossary.html">Glossary</a> makes chapter definitions searchable.</p><p><strong>Weight-aware order:</strong> review Domain 2 first (35&ndash;40%), then Domain 3 (30&ndash;35%), then Domain 1 (25&ndash;30%). See the <a href="review.html#plan">review plan</a> for proportional time guidance.</p></section>
 <section class="card" id="confusion"><h2><svg class="icon icon-question" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 3.9 1.9c-1 .8-1.6 1.2-1.6 2.6M12 17h.01"/></svg>Confusion index</h2><div class="tw"><table class="t"><thead><tr><th scope="col">Mix-up</th><th scope="col">One-line discriminator</th><th scope="col">Notes</th></tr></thead><tbody>
-<tr><td>Policy vs RBAC vs Locks</td><td>Policy enforces standards; RBAC grants actions; locks block deletion or changes.</td><td><a href="09-governance-compliance.html">Governance notes</a></td></tr>
-<tr><td>Monitor vs Advisor vs Service Health</td><td>Monitor observes workloads; Advisor recommends; Service Health reports Azure incidents and maintenance.</td><td><a href="11-monitoring.html">Monitoring notes</a></td></tr>
-<tr><td>Blob vs Files</td><td>Blob stores object data; Files exposes managed file shares over SMB or NFS.</td><td><a href="06-storage.html">Storage notes</a></td></tr>
-<tr><td>VPN Gateway vs ExpressRoute</td><td>VPN uses encrypted public internet; ExpressRoute uses private dedicated connectivity.</td><td><a href="05-compute-networking.html">Networking notes</a></td></tr>
-<tr><td>Availability Set vs Availability Zone</td><td>Set spreads VMs across fault/update domains; zone uses separate datacenter locations.</td><td><a href="04-core-architecture.html">Architecture notes</a></td></tr>
-<tr><td>Subscription vs Resource Group vs Management Group</td><td>Subscription is billing and access boundary; group organizes resources; management group organizes subscriptions.</td><td><a href="04-core-architecture.html">Architecture notes</a></td></tr>
-<tr><td>Public vs private endpoint</td><td>Public endpoint uses public IP path; private endpoint maps service to a VNet private IP.</td><td><a href="05-compute-networking.html">Networking notes</a></td></tr>
-<tr><td>IaaS vs PaaS vs SaaS</td><td>More service means less customer management: infrastructure, platform, then complete application.</td><td><a href="03-service-types.html">Service types notes</a></td></tr>
-<tr><td>Entra ID vs Entra Domain Services</td><td>Entra ID is cloud identity; Domain Services supplies managed domain join, LDAP, and Kerberos/NTLM.</td><td><a href="07-identity-security.html">Identity notes</a></td></tr>
-<tr><td>Region vs region pair vs availability zone</td><td>Region is geographic area; pair is linked-region relationship; zone is isolated datacenter group inside a region.</td><td><a href="04-core-architecture.html">Architecture notes</a></td></tr>
+<tr><td>Policy vs RBAC vs Locks</td><td>Policy enforces standards; RBAC grants actions; locks block deletion or changes.</td><td><a href="09-governance-compliance.html#discrimination">Governance notes</a></td></tr>
+<tr><td>Monitor vs Advisor vs Service Health</td><td>Monitor observes workloads; Advisor recommends; Service Health reports Azure incidents and maintenance.</td><td><a href="11-monitoring.html#trio">Monitoring notes</a></td></tr>
+<tr><td>Blob vs Files</td><td>Blob stores object data; Files exposes managed file shares over SMB or NFS.</td><td><a href="06-storage.html#services">Storage notes</a></td></tr>
+<tr><td>VPN Gateway vs ExpressRoute</td><td>VPN uses encrypted public internet; ExpressRoute uses private dedicated connectivity.</td><td><a href="05-compute-networking.html#networking">Networking notes</a></td></tr>
+<tr><td>Availability Set vs Availability Zone</td><td>Set spreads VMs across fault/update domains; zone uses separate datacenter locations.</td><td><a href="05-compute-networking.html#hosting">Compute and networking notes</a></td></tr>
+<tr><td>Subscription vs Resource Group vs Management Group</td><td>Subscription is billing and access boundary; group organizes resources; management group organizes subscriptions.</td><td><a href="04-core-architecture.html#hierarchy">Architecture notes</a></td></tr>
+<tr><td>Public vs private endpoint</td><td>Public endpoint uses public IP path; private endpoint maps service to a VNet private IP.</td><td><a href="05-compute-networking.html#endpoints">Networking notes</a></td></tr>
+<tr><td>IaaS vs PaaS vs SaaS</td><td>More service means less customer management: infrastructure, platform, then complete application.</td><td><a href="03-service-types.html#use-cases">Service types notes</a></td></tr>
+<tr><td>Entra ID vs Entra Domain Services</td><td>Entra ID is cloud identity; Domain Services supplies managed domain join, LDAP, and Kerberos/NTLM.</td><td><a href="07-identity-security.html#directory">Identity notes</a></td></tr>
+<tr><td>Region vs region pair vs availability zone</td><td>Region is geographic area; pair is linked-region relationship; zone is isolated datacenter group inside a region.</td><td><a href="04-core-architecture.html#geography">Architecture notes</a></td></tr>
 </tbody></table></div></section>
+<div id="study-summary"></div>
 </main>
 <footer class="foot">Scope: AZ-900 skills measured as of July 20, 2026 &middot; <a href="https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-900">Official AZ-900 study guide</a></footer>
 </div>
-<script>(function(){var filter=document.querySelector('#filter');var cards=document.querySelectorAll('.grid .card');var domains=document.querySelectorAll('h3.domain');var status=document.querySelector('#filter-status');var empty=document.querySelector('#filter-empty');function update(){var q=filter.value.toLowerCase();var count=0;var i;for(i=0;i<cards.length;i++){var match=cards[i].textContent.toLowerCase().indexOf(q)!==-1;cards[i].hidden=!match;if(match){count++;}}for(i=0;i<domains.length;i++){var grid=domains[i].nextElementSibling;var visible=grid?grid.querySelectorAll('.card:not([hidden])').length:0;domains[i].hidden=visible===0;}if(count===0){status.textContent='No objectives match your filter.';empty.hidden=false;}else{status.textContent=count+' objectives shown.';empty.hidden=true;}}filter.addEventListener('input',update);update();})();</script>
+<script>
+const filter = document.querySelector('#filter');
+const cards = [...document.querySelectorAll('.grid .card')];
+const domains = [...document.querySelectorAll('h3.domain')];
+const status = document.querySelector('#filter-status');
+const empty = document.querySelector('#filter-empty');
+const update = () => {
+  const query = filter?.value.toLowerCase() ?? '';
+  const visible = cards.filter((card) => {
+    const match = card.textContent.toLowerCase().includes(query);
+    card.hidden = !match;
+    return match;
+  });
+  domains.forEach((domain) => {
+    const grid = domain.nextElementSibling;
+    domain.hidden = !grid?.querySelector('.card:not([hidden])');
+  });
+  status.textContent = visible.length === 0 ? 'No objectives match your filter.' : `${visible.length} objectives shown.`;
+  empty.hidden = visible.length !== 0;
+};
+filter?.addEventListener('input', update);
+update();
+</script>
+<script src="../../assets/study.js"></script>
 </body>
 </html>

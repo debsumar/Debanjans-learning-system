@@ -58,7 +58,7 @@ graph TD
 ```text
 index.html          launcher
 assets/             theme.css, theme.js, registry.js
-content             topics/az-900/topic.css plus 12 pages
+content             topics/az-900/topic.css plus 14 pages
 tools/              verify.ps1
 ```
 
@@ -113,7 +113,7 @@ Paper-first print mode switches to white backgrounds, readable dark text, print-
 - Filter has a real label, live match status, and visible empty state.
 - Table header cells use `scope="col"`; informative diagrams use `role="img"` plus `aria-label`.
 - Prose measure is capped; links are underlined instead of colour-only.
-- No remote assets, build step, server, `fetch()`, or ES modules.
+- No remote assets, build step, server, or dependencies. Scripts use ES2026 syntax in classic `<script>` tags only: no modules and no `fetch()`.
 - Source markup remains ASCII-only. Mermaid fences below use ASCII only.
 
 ---
@@ -140,9 +140,33 @@ Platform CSS and JavaScript stay shared. One intentional manual platform edit re
 
 ---
 
+## Learning method
+
+- **Attempt before reveal:** answer each recall item or MCQ before opening its explanation.
+- **Calibrate:** record confidence before self-grading; compare confidence with the result to expose overconfidence and underconfidence.
+- **Leitner spacing:** move successful items through 1, 3, 7, 14, and 30-day review intervals; return misses to the first box.
+- **Interleave discrimination:** after chapter foundations, mix look-alike services across chapters so retrieval depends on the discriminator, not position.
+- **Weight-aware priority:** review Domain 2 first, then Domain 3, then Domain 1; within each, work low-confidence, missed, and due items first.
+
+## Blueprint
+
+Seven registry layers keep content, practice, and validation aligned:
+
+1. Certification manifest
+2. Objective registry
+3. Ordered chapter map
+4. Section archetypes
+5. Question schema and count contract
+6. Diagram catalogue and geometry rules
+7. Confusion sets and hub targets
+
+Study policy overlays those layers with Leitner, confidence, and domain-weight guidance. See [`docs/BLUEPRINT.md`](docs/BLUEPRINT.md) for data boundaries and extension steps.
+
+---
+
 ## 📚 Topics
 
-### ![AZ-900](https://img.shields.io/badge/AZ--900-Azure_Fundamentals-0078d4?style=flat-square&logo=microsoftazure&logoColor=white) · 12 pages
+### ![AZ-900](https://img.shields.io/badge/AZ--900-Azure_Fundamentals-0078d4?style=flat-square&logo=microsoftazure&logoColor=white) · 14 pages
 
 <details>
 <summary><b>11 chapters, mapped to exam domains</b></summary>

@@ -114,8 +114,16 @@ Colour literals belong in root token blocks or a topic token override. A topic `
 
 No `@font-face`, remote stylesheet, remote script, remote image, or other remote asset. Font stacks fall back locally. Source files stay ASCII-only; HTML encodes punctuation with entities such as `&mdash;`, `&ndash;`, `&middot;`, `&larr;`, and `&rarr;`. No inline `<style>` blocks. `assets/registry.js` may be loaded only as a future classic script feature, never required for page reading.
 
+## Study markup contract
+
+Study markup is stable, semantic HTML. A chapter body carries `data-chapter`, `data-domain`, and `data-weight`. Recall answers use `<details class="recall-item" data-recall="cNN-rMM">`; multiple-choice answers use `data-mcq="cNN-qMM"`. IDs are unique across the repository. Objective-linked answers carry one or more `data-objective` values from the registry. The `#skills` list uses one `id="az900-cNN-oM"` on every objective `<li>`.
+
+Every study-enabled chapter, the review page, and the topic hub provide exactly one `<div id="study-summary"></div>` mount and exactly one trailing `<script src="../../assets/study.js"></script>` reference. `study.js` is OPTIONAL progressive enhancement: attempt, confidence, self-grade, and Leitner controls are conveniences; all prompts and answer content remain readable with JavaScript disabled.
+
+All JavaScript uses ES2026 syntax in classic scripts: never modules. `import` is CORS-blocked from `file://`, so do not use `<script type="module">`, module imports, or a fetch-based runtime contract. `localStorage` is scoped per file URL. Study state does not follow the reader between pages opened from disk, but works normally on the hosted GitHub Pages copy.
+
 ## Registry and verification
 
-`assets/registry.js` is one IIFE assigning `window.LEARNING_SYSTEM`. It stores platform name/version, `dls-theme`, sticky/depth conventions, and ordered topic/chapter metadata including page counts, files, titles, domains, weights, accents, pills, and hub paths. It is author-side single source of truth, not a runtime dependency.
+`assets/registry.js` directly assigns one `globalThis.LEARNING_SYSTEM` object in a classic script. It stores the certification manifest, objective registry, ordered chapter map, section archetypes, question contract, diagram catalogue, confusion sets, and study policy. It is author-side single source of truth, not a runtime dependency.
 
-`tools/verify.ps1` extracts registry metadata text and validates registry JavaScript syntax with Node when available. It checks registry/disk chapter parity, navigation chain, exact launcher and hub href order, static HTML restrictions, same-file anchors, skip/main contracts, and shared asset references. It prints PASS/FAIL counts and exits non-zero on any failure.
+`tools/verify.ps1` extracts registry metadata text and validates registry JavaScript syntax with Node when available. It checks registry/disk chapter parity, navigation chain, exact launcher and hub href order, objective coverage, question IDs/counts, skills-bullet IDs, confusion targets, SVG geometry, study contract, JavaScript-disabled readability, classic-script syntax, static HTML restrictions, same-file anchors, skip/main contracts, and shared asset references. It prints PASS/FAIL/SKIP counts and exits non-zero on any failure.

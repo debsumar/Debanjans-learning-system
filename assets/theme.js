@@ -1,29 +1,40 @@
-/* File URLs have separate localStorage objects, so theme persistence across pages is not guaranteed. */
-(function(){
-  var root = document.documentElement;
-  var theme = 'dark';
+/* Shared theme boot and toggle. ES2026 syntax, loaded as a classic script.
+   Not an ES module: `import` is CORS-blocked from file:// URLs.
+   File URLs get a separate localStorage object per URL, so theme choice does not
+   reliably follow the reader between pages opened from disk. It persists normally
+   on the hosted copy. All storage access is guarded; blocked storage falls back to dark. */
+(() => {
+  const root = document.documentElement;
+
+  let theme = 'dark';
   try {
-    var stored = localStorage.getItem('dls-theme');
+    const stored = localStorage.getItem('dls-theme');
     if (stored === 'light' || stored === 'dark') theme = stored;
-  } catch (e) {}
+  } catch {}
   root.setAttribute('data-theme', theme);
-  function bindToggle() {
-    var button = document.getElementById('theme-toggle');
+
+  const bindToggle = () => {
+    const button = document.getElementById('theme-toggle');
     if (!button) return;
-    var label = button.querySelector('.theme-label');
-    function syncLabel() {
-      var isLight = root.getAttribute('data-theme') === 'light';
+
+    const label = button.querySelector('.theme-label');
+
+    const syncLabel = () => {
+      const isLight = root.getAttribute('data-theme') === 'light';
       if (label) label.textContent = isLight ? 'Light' : 'Dark';
-      button.setAttribute('aria-pressed', isLight ? 'true' : 'false');
-    }
+      button.setAttribute('aria-pressed', String(isLight));
+    };
+
     syncLabel();
-    button.addEventListener('click', function(){
-      var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+
+    button.addEventListener('click', () => {
+      const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
       root.setAttribute('data-theme', next);
-      try { localStorage.setItem('dls-theme', next); } catch (e) {}
+      try { localStorage.setItem('dls-theme', next); } catch {}
       syncLabel();
     });
-  }
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bindToggle);
   } else {
