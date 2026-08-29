@@ -1,0 +1,11 @@
+/* This file is the ONLY place a topic may set colour. New topics change these values to get their own identity. */
+:root {
+  --accent: #d97757;
+  --accent-soft: #d4a27f;
+  --accent-dim: rgba(217, 119, 87, .10);
+}
+:root[data-theme="light"] {
+  --accent: #b3552d;
+  --accent-soft: #8a4522;
+  --accent-dim: rgba(179, 85, 45, .08);
+}
