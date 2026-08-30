@@ -45,8 +45,8 @@ if ($registryLoaded) {
     foreach ($m in [regex]::Matches($registryText, 'slug:\s*"([^"]+)"\s*,\s*hubPath:\s*"([^"]+)"')) {
       $topics += [pscustomobject]@{ Slug = $m.Groups[1].Value; HubPath = $m.Groups[2].Value }
     }
-    foreach ($m in [regex]::Matches($registryText, '\{\s*id:\s*"(c\d{2})"\s*,\s*file:\s*"([^"]+)"\s*,\s*title:\s*"([^"]+)"\s*,\s*domain:\s*"([^"]+)"\s*,\s*weight:\s*"([^"]+)"')) {
-      $registryChapters += [pscustomobject]@{ Id = $m.Groups[1].Value; File = $m.Groups[2].Value; Title = $m.Groups[3].Value; Domain = $m.Groups[4].Value; Weight = $m.Groups[5].Value }
+    foreach ($m in [regex]::Matches($registryText, '\{\s*id:\s*"(c\d{2})"\s*,\s*file:\s*"([^"]+)"\s*,\s*title:\s*"([^"]+)"\s*,\s*shortTitle:\s*"([^"]+)"\s*,\s*domain:\s*"([^"]+)"\s*,\s*weight:\s*"([^"]+)"')) {
+      $registryChapters += [pscustomobject]@{ Id = $m.Groups[1].Value; File = $m.Groups[2].Value; Title = $m.Groups[3].Value; ShortTitle = $m.Groups[4].Value; Domain = $m.Groups[5].Value; Weight = $m.Groups[6].Value }
     }
   } catch { }
 }
@@ -719,6 +719,138 @@ foreach ($js in $jsFiles) {
   if ($m -gt 0) { $esPass = $false; Write-Host ('  module type in asset script: ' + $js.Name) }
 }
 Add-Check 'ES2026 classic asset scripts' ($esPass -and $jsCount -gt 0) $jsCount ("asset-js={0}, var={1}, module-markers={2}" -f $jsCount, $varCount, $moduleCount)
+
+
+$breadcrumbPass = $true
+$breadcrumbPages = 0
+$breadcrumbNavCount = 0
+$breadcrumbLiCount = 0
+$breadcrumbLeafCount = 0
+$breadcrumbAncestorCount = 0
+$breadcrumbLabelCount = 0
+$breadcrumbSeparatorViolations = 0
+$breadcrumbMissing = @()
+$breadcrumbPageRecords = @()
+if ($null -ne $rootText) {
+  $rootCrumbs = @([regex]::Matches($rootText, '<nav\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\bcrumbs\b[^"'']*["''])(?=[^>]*\baria-label\s*=\s*["'']Breadcrumb["''])[^>]*>[\s\S]*?</nav>'))
+  if ($rootCrumbs.Count -ne 0 -or $rootText -notmatch '<div\b[^>]*\bclass\s*=\s*["'']site["''][^>]*>') {
+    $breadcrumbPass = $false
+    Write-Host '  root launcher must have no breadcrumb and must retain div.site'
+  }
+} else {
+  $breadcrumbPass = $false
+  Write-Host '  root launcher missing or unreadable'
+}
+$breadcrumbPageRecords += [pscustomobject]@{ Path = $hubPath; Type = 'hub'; Depth = 2; Labels = @('Learning System', 'AZ-900'); Hrefs = @('../../index.html') }
+$breadcrumbPageRecords += [pscustomobject]@{ Path = (Join-Path $topicRoot 'review.html'); Type = 'review'; Depth = 3; Labels = @('Learning System', 'AZ-900', 'Review'); Hrefs = @('../../index.html', 'index.html') }
+$breadcrumbPageRecords += [pscustomobject]@{ Path = (Join-Path $topicRoot 'glossary.html'); Type = 'glossary'; Depth = 3; Labels = @('Learning System', 'AZ-900', 'Glossary'); Hrefs = @('../../index.html', 'index.html') }
+foreach ($chapter in $registryChapters) {
+  $breadcrumbPageRecords += [pscustomobject]@{ Path = (Join-Path $topicRoot $chapter.File); Type = 'chapter'; Depth = 3; Labels = @('Learning System', 'AZ-900', $chapter.ShortTitle); Hrefs = @('../../index.html', 'index.html'); ShortTitle = $chapter.ShortTitle }
+}
+$expectedBreadcrumbPaths = @{}
+foreach ($record in $breadcrumbPageRecords) { try { $expectedBreadcrumbPaths[[IO.Path]::GetFullPath($record.Path)] = $true } catch { $breadcrumbPass = $false } }
+foreach ($file in @($htmlFiles | Where-Object { [IO.Path]::GetFullPath($_.FullName) -ne [IO.Path]::GetFullPath($rootIndex) })) {
+  try { $actualPath = [IO.Path]::GetFullPath($file.FullName) } catch { $actualPath = $null }
+  if ($null -eq $actualPath -or -not $expectedBreadcrumbPaths.ContainsKey($actualPath)) {
+    $breadcrumbPass = $false
+    Write-Host ('  HTML page missing from breadcrumb contract: ' + $file.FullName)
+  }
+}
+if ($htmlFiles.Count -ne ($breadcrumbPageRecords.Count + 1)) {
+  $breadcrumbPass = $false
+  Write-Host ("  HTML page count mismatch: discovered={0}, expected topic plus root={1}" -f $htmlFiles.Count, ($breadcrumbPageRecords.Count + 1))
+}
+foreach ($record in $breadcrumbPageRecords) {
+  $breadcrumbPages++
+  $pageText = Read-Text $record.Path
+  if ($null -eq $pageText) {
+    $breadcrumbPass = $false
+    $breadcrumbMissing += (Split-Path -Leaf $record.Path)
+    Write-Host ('  breadcrumb page missing or unreadable: ' + $record.Path)
+    continue
+  }
+  $navs = @([regex]::Matches($pageText, '<nav\b(?=[^>]*\bclass\s*=\s*["''][^"'']*\bcrumbs\b[^"'']*["''])(?=[^>]*\baria-label\s*=\s*["'']Breadcrumb["''])[^>]*>([\s\S]*?)</nav>'))
+  $breadcrumbNavCount += $navs.Count
+  if ($navs.Count -ne 1) {
+    $breadcrumbPass = $false
+    Write-Host ("  {0} breadcrumb nav count={1}; expected=1" -f (Split-Path -Leaf $record.Path), $navs.Count)
+    continue
+  }
+  $navText = $navs[0].Groups[1].Value
+  $ols = @([regex]::Matches($navText, '<ol\b[^>]*>[\s\S]*?</ol>'))
+  $lis = @([regex]::Matches($navText, '<li\b[^>]*>[\s\S]*?</li>'))
+  $breadcrumbLiCount += $lis.Count
+  if ($ols.Count -ne 1 -or $lis.Count -ne $record.Depth) {
+    $breadcrumbPass = $false
+    Write-Host ("  {0} breadcrumb shape: ol={1}, li={2}; expected ol=1, li={3}" -f (Split-Path -Leaf $record.Path), $ols.Count, $lis.Count, $record.Depth)
+  }
+  $plainNavText = [regex]::Replace($navText, '<[^>]*>', '')
+  if ($plainNavText -match '&rsaquo;|&gt;|&raquo;|[/>]') {
+    $breadcrumbPass = $false; $breadcrumbSeparatorViolations++
+    Write-Host ('  typed breadcrumb separator found: ' + (Split-Path -Leaf $record.Path))
+  }
+  if ($lis.Count -ne $record.Depth) { continue }
+  for ($i = 0; $i -lt $lis.Count; $i++) {
+    $li = $lis[$i].Value
+    $isLast = $i -eq ($lis.Count - 1)
+    $anchors = @([regex]::Matches($li, '<a\b[^>]*\bhref\s*=\s*["'']([^"'']+)["''][^>]*>[\s\S]*?</a>'))
+    if (-not $isLast) {
+      if ($anchors.Count -ne 1) { $breadcrumbPass = $false; Write-Host ("  ancestor li lacks exactly one anchor: {0} li={1}" -f (Split-Path -Leaf $record.Path), ($i + 1)); continue }
+      $breadcrumbAncestorCount++
+      $href = $anchors[0].Groups[1].Value
+      if ($i -ge $record.Hrefs.Count -or $href -ne $record.Hrefs[$i]) {
+        $breadcrumbPass = $false
+        $expectedHref = if ($i -lt $record.Hrefs.Count) { $record.Hrefs[$i] } else { 'none' }
+        Write-Host ("  breadcrumb ancestor href mismatch {0} li={1}: actual={2}, expected={3}" -f (Split-Path -Leaf $record.Path), ($i + 1), $href, $expectedHref)
+      }
+      $targetHref = ($href -split '#', 2)[0]
+      if ([string]::IsNullOrWhiteSpace($targetHref)) { $breadcrumbPass = $false; Write-Host ('  empty breadcrumb ancestor href: ' + (Split-Path -Leaf $record.Path)); continue }
+      try { $targetPath = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $record.Path) ($targetHref -replace '/', '\'))) } catch { $targetPath = $null }
+      if ($null -eq $targetPath -or -not (Test-Path -LiteralPath $targetPath -PathType Leaf)) {
+        $breadcrumbPass = $false; Write-Host ("  breadcrumb ancestor target missing {0}: {1}" -f (Split-Path -Leaf $record.Path), $href)
+      } elseif ([IO.Path]::GetFullPath($targetPath) -eq [IO.Path]::GetFullPath($record.Path)) {
+        $breadcrumbPass = $false; Write-Host ('  breadcrumb ancestor links to current page: ' + (Split-Path -Leaf $record.Path))
+      }
+    } elseif ($anchors.Count -gt 0) {
+      $breadcrumbPass = $false
+      Write-Host ('  breadcrumb leaf must not be an anchor: ' + (Split-Path -Leaf $record.Path))
+    }
+  }
+  $current = @([regex]::Matches($lis[$lis.Count - 1].Value, '<(?!a\b)[A-Za-z][^>]*\baria-current\s*=\s*["'']page["''][^>]*>'))
+  $currentAnchors = @([regex]::Matches($lis[$lis.Count - 1].Value, '<a\b[^>]*\baria-current\s*=\s*["'']page["'']'))
+  if ($current.Count -ne 1 -or $currentAnchors.Count -ne 0) {
+    $breadcrumbPass = $false
+    Write-Host ("  breadcrumb leaf current marker invalid: {0} non-anchor={1}, anchor={2}" -f (Split-Path -Leaf $record.Path), $current.Count, $currentAnchors.Count)
+  } else { $breadcrumbLeafCount++ }
+  foreach ($a in [regex]::Matches($navText, '<a\b[^>]*\bhref\s*=\s*["'']([^"'']+)["'']')) {
+    $targetHref = ($a.Groups[1].Value -split '#', 2)[0]
+    try { $targetPath = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $record.Path) ($targetHref -replace '/', '\'))) } catch { $targetPath = $null }
+    if ($null -ne $targetPath -and [IO.Path]::GetFullPath($targetPath) -eq [IO.Path]::GetFullPath($record.Path)) {
+      $breadcrumbPass = $false
+      Write-Host ('  breadcrumb contains self-link: ' + (Split-Path -Leaf $record.Path))
+    }
+  }
+  $leafText = [regex]::Replace($lis[$lis.Count - 1].Value, '<[^>]*>', '')
+  $leafText = [Net.WebUtility]::HtmlDecode($leafText).Trim()
+  if ($record.Type -eq 'chapter') {
+    $breadcrumbLabelCount++
+    if ($leafText -ne $record.ShortTitle) {
+      $breadcrumbPass = $false
+      Write-Host ("  breadcrumb shortTitle mismatch {0}: actual='{1}', expected='{2}'" -f (Split-Path -Leaf $record.Path), $leafText, $record.ShortTitle)
+    }
+  } elseif ($leafText -ne $record.Labels[$record.Labels.Count - 1]) {
+    $breadcrumbPass = $false
+    Write-Host ("  breadcrumb leaf label mismatch {0}: actual='{1}', expected='{2}'" -f (Split-Path -Leaf $record.Path), $leafText, $record.Labels[$record.Labels.Count - 1])
+  }
+}
+$themeText = Read-Text (Join-Path $assetRoot 'theme.css')
+$cssSeparatorPass = $null -ne $themeText -and $themeText -match '(?m)^\s*\.crumbs\s+li\s*\+\s*li::before\s*\{'
+$printCssText = if ($null -ne $themeText -and $themeText.IndexOf('@media print', [StringComparison]::Ordinal) -ge 0) { $themeText.Substring($themeText.IndexOf('@media print', [StringComparison]::Ordinal)) } else { '' }
+$cssPrintPass = $printCssText -match '(?s)\.crumbs\b[^{}]*\{[^{}]*display\s*:\s*none'
+if (-not $cssSeparatorPass) { $breadcrumbPass = $false; Write-Host '  theme.css missing .crumbs li + li::before separator rule' }
+if (-not $cssPrintPass) { $breadcrumbPass = $false; Write-Host '  theme.css print block does not hide .crumbs' }
+$breadcrumbPass = $breadcrumbPass -and $breadcrumbPages -eq 14 -and $breadcrumbNavCount -eq 14 -and $breadcrumbLiCount -eq 41 -and $breadcrumbLeafCount -eq 14 -and $breadcrumbLabelCount -eq 11 -and $breadcrumbMissing.Count -eq 0 -and $breadcrumbSeparatorViolations -eq 0
+Add-Check 'breadcrumb contract' $breadcrumbPass $breadcrumbPages ("pages={0}, navs={1}, li={2}, leaves={3}, ancestors={4}, shortTitle-labels={5}, missing={6}, typed-separators={7}, css-separator={8}, print-hide={9}; root has none" -f $breadcrumbPages, $breadcrumbNavCount, $breadcrumbLiCount, $breadcrumbLeafCount, $breadcrumbAncestorCount, $breadcrumbLabelCount, $breadcrumbMissing.Count, $breadcrumbSeparatorViolations, $cssSeparatorPass, $cssPrintPass)
 
 Write-Host ''
 if ($failures -eq 0) { Write-Host ("PASS: {0} checks, 0 failures." -f $checks); exit 0 }

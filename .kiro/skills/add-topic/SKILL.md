@@ -162,3 +162,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify.ps1
 ## Finish
 
 Check all cited paths, IDs, classes, counts, anchors, and chapter links against shipped files. Open pages directly via `file://`; verify dark/light/print rendering, keyboard focus, visible matrices, and answer readability with JavaScript disabled. Human-review facts, answer keys, rationales, glossary first-use choice, and component teaching quality. Commit only after verifier passes.
+
+
+## Breadcrumb-first page labels
+
+Before authoring any topic pages, define the topic-level breadcrumb label and add one `shortTitle` for every chapter in `assets/registry.js`. The verifier compares each chapter breadcrumb leaf with its registry `shortTitle`, preventing label drift. Root crumb label is always `Learning System` and is shared across topics. Topic hubs use `Learning System` plus the topic label; chapters, review, and glossary add their unlinked current leaf.

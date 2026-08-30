@@ -58,6 +58,17 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--
 .top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--border); margin: 0 -18px 28px; padding: 8px 18px; }
 .top-inner { max-width: var(--maxw); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap; }
 .site { font-weight: 600; letter-spacing: .01em; margin-right: auto; }
+.crumbs { margin-right: auto; font-size: .84rem; }
+.crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; list-style: none; margin: 0; padding: 0; }
+.crumbs li { margin: 0; }
+.crumbs li + li::before { content: "\203A"; color: var(--border); margin-right: 6px; }
+.crumbs a { display: inline-flex; align-items: center; min-height: 28px; color: var(--muted); text-decoration: none; }
+.crumbs a:hover, .crumbs a:focus-visible { color: var(--text); }
+.crumbs [aria-current="page"] { color: var(--text); }
+@media (max-width: 600px) {
+  .crumbs li:first-child { display: none; }
+  .crumbs li:first-child + li::before { content: none; }
+}
 .top-links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: .86rem; }
 .top-links a { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 9px; border-radius: 999px; color: var(--muted); }
 .top-links a:hover, .top-links a:focus-visible { color: var(--text); background: var(--surface-2); }
@@ -186,7 +197,7 @@ details.more.study-mastered { border-color: var(--good); background: var(--good-
   }
   *, *::before, *::after { print-color-adjust: economy; -webkit-print-color-adjust: economy; }
   body { background: var(--bg); color: var(--text); padding: 0; }
-  .top, .top-links, nav.toc, .theme-toggle, .skip { display: none; }
+  .top, .top-links, .crumbs, nav.toc, .theme-toggle, .skip { display: none; }
   section.card, .grid > .card { background: transparent; border: 1px solid var(--border); break-inside: avoid; }
   .tldr { border-left: 4px solid var(--accent); }
   .cal.myth { border-left-color: var(--myth); background: var(--myth-dim); }

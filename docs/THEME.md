@@ -247,3 +247,19 @@ Every page also has exactly one non-empty, page-specific description in its head
 ```html
 <meta name="description" content="AZ-900 notes on Azure storage services, tiers, redundancy, and transfer tools.">
 ```
+
+## Breadcrumb contract
+
+Every topic page has one accessible breadcrumb in the sticky bar. The root launcher has no breadcrumb and keeps its `.site` title. Use `nav.crumbs[aria-label="Breadcrumb"]` containing one `ol`.
+
+The topic hub uses two levels: root and topic. Chapters, review, and glossary pages use three levels: root, topic, and page. Ancestor levels are links; the final page label is an unlinked element with `aria-current="page"`. The final chapter label must equal its registry `shortTitle`.
+
+```html
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../index.html">Learning System</a></li><li><span aria-current="page">AZ-900</span></li></ol></nav>
+```
+
+```html
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../index.html">Learning System</a></li><li><a href="index.html">AZ-900</a></li><li><span aria-current="page">Cloud computing</span></li></ol></nav>
+```
+
+Never type separators between breadcrumb items: no `&rsaquo;`, `&gt;`, `&raquo;`, slash, or greater-than text. `assets/theme.css` supplies `.crumbs li + li::before` with a CSS-generated separator. CSS-only separators keep punctuation out of the accessibility tree; otherwise screen readers can announce a separator at every level. On narrow screens, CSS hides the root crumb and its leading separator, leaving the topic or page context visible. Print CSS hides the breadcrumb.

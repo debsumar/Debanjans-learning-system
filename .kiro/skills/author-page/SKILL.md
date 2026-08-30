@@ -202,3 +202,19 @@ Add exactly one non-empty, unique description for every page. Describe page-spec
 ```html
 <meta name="description" content="AZ-900 notes on Azure storage services, tiers, redundancy, and transfer tools.">
 ```
+
+## Breadcrumbs
+
+Add one breadcrumb nav inside `.top-inner`, before `.top-links`. Root launcher has none. Use two levels on a topic hub:
+
+```html
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../index.html">Learning System</a></li><li><span aria-current="page">Topic label</span></li></ol></nav>
+```
+
+Use three levels on chapters, review, and glossary pages:
+
+```html
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../index.html">Learning System</a></li><li><a href="index.html">Topic label</a></li><li><span aria-current="page">Page label</span></li></ol></nav>
+```
+
+Keep final leaf unlinked and marked `aria-current="page"`. Replace `Page label` on chapters with registry `shortTitle`. Never type separators between `li` elements. CSS generates separators through `.crumbs li + li::before`; typed separator entities or characters are forbidden.
