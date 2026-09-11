@@ -221,7 +221,13 @@ if (-not $registryLoaded) {
 } elseif ($null -eq $node) {
   Add-Check 'registry JavaScript syntax' $false 0 'Node.js is unavailable'
 } else {
-  $nodeOutput = & $node.Source --check $registryPath 2>&1 | Out-String
+  $savedErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $nodeOutput = & $node.Source --check $registryPath 2>&1 | Out-String
+  } finally {
+    $ErrorActionPreference = $savedErrorActionPreference
+  }
   $syntaxPass = $LASTEXITCODE -eq 0
   if (-not $syntaxPass) { Write-Host ('  registry syntax error: ' + $nodeOutput.Trim()) }
   Add-Check 'registry JavaScript syntax' $syntaxPass 1 'validated with node --check'
@@ -230,11 +236,11 @@ if (-not $registryLoaded) {
 foreach ($topic in $topics) {
   $chapterDisk = @()
   if (Test-Path -LiteralPath $topic.TopicRoot -PathType Container) {
-    $chapterDisk = @(Get-ChildItem -LiteralPath $topic.TopicRoot -Filter '*.html' -File | Where-Object { $_.Name -notin @('index.html', 'review.html', 'glossary.html') })
+    $chapterDisk = @(Get-ChildItem -LiteralPath $topic.TopicRoot -Filter '*.html' -File | Where-Object { $_.Name -cnotin @('index.html', 'review.html', 'glossary.html') })
   }
   $missingRegistryChapters = @($topic.Chapters | Where-Object { -not (Test-Path -LiteralPath (Join-Path $topic.TopicRoot $_.File) -PathType Leaf) })
   $listedDiskKeys = @($topic.Chapters | ForEach-Object { $_.File })
-  $unlistedDisk = @($chapterDisk | Where-Object { $listedDiskKeys -notcontains $_.Name })
+  $unlistedDisk = @($chapterDisk | Where-Object { $listedDiskKeys -cnotcontains $_.Name })
   Add-Check ($topic.Slug + ': registry chapters exist') ($topic.Chapters.Count -gt 0 -and $missingRegistryChapters.Count -eq 0) $topic.Chapters.Count $(if ($missingRegistryChapters.Count) { 'missing: ' + (($missingRegistryChapters | ForEach-Object File) -join ', ') } else { 'all registry files exist' })
   Add-Check ($topic.Slug + ': disk chapters listed') ($topic.Chapters.Count -gt 0 -and $unlistedDisk.Count -eq 0 -and $chapterDisk.Count -eq $topic.Chapters.Count) $chapterDisk.Count $(if ($unlistedDisk.Count) { 'unlisted: ' + (($unlistedDisk | ForEach-Object Name) -join ', ') } else { 'all chapter HTML files listed' })
 }
@@ -254,7 +260,7 @@ foreach ($topic in $topics) {
     $next = [regex]::Match($chapterText, 'href="([^"]+)">Next &rarr;').Groups[1].Value
     $expectedPrev = if ($i -eq 0) { 'index.html' } else { $topic.Chapters[$i - 1].File }
     $expectedNext = if ($i -eq $topic.Chapters.Count - 1) { 'index.html' } else { $topic.Chapters[$i + 1].File }
-    if ($prev -ne $expectedPrev -or $next -ne $expectedNext) {
+    if ($prev -cne $expectedPrev -or $next -cne $expectedNext) {
       $chainPass = $false
       Write-Host ("  chain mismatch {0}: Prev={1}, Next={2}; expected Prev={3}, Next={4}" -f $topic.Chapters[$i].File, $prev, $next, $expectedPrev, $expectedNext)
     }
@@ -262,7 +268,7 @@ foreach ($topic in $topics) {
   Add-Check ($topic.Slug + ': prev/next chain') ($topic.Chapters.Count -gt 0 -and $chainPass -and $chainCount -eq $topic.Chapters.Count) $chainCount 'chain matches registry order; endpoints link to hub'
 }
 
-$publishedTopics = @($topics | Where-Object { Test-Path -LiteralPath (Join-Path $root ($_.HubPath -replace '/', '\')) -PathType Leaf })
+$publishedTopics = @($topics | Where-Object { Test-Path -LiteralPath (Join-Path $root ($_.HubPath)) -PathType Leaf })
 $launcherPass = $null -ne $rootText
 $expectedLauncherHrefs = @($publishedTopics | ForEach-Object { $_.HubPath })
 $launcherHrefPattern = if ($expectedLauncherHrefs.Count -gt 0) { 'href="(' + (($expectedLauncherHrefs | ForEach-Object { [regex]::Escape($_) }) -join '|') + ')"' } else { '(?!)' }
@@ -273,7 +279,7 @@ if ($null -ne $rootText) {
   $launcherCandidateMatches = @([regex]::Matches($rootText, 'href="(topics/[^"/]+/[^"]+\.html)"'))
 }
 foreach ($m in $launcherCandidateMatches) {
-  $target = Join-Path $root ($m.Groups[1].Value -replace '/', '\')
+  $target = Join-Path $root ($m.Groups[1].Value)
   if (-not (Test-Path -LiteralPath $target -PathType Leaf)) { $launcherPass = $false; Write-Host ('  missing launcher card target: ' + $m.Groups[1].Value) }
 }
 if ($launcherCandidateMatches.Count -ne $launcherMatches.Count) { $launcherPass = $false; Write-Host ('  unregistered launcher card href: ' + (($launcherCandidateMatches | ForEach-Object { $_.Groups[1].Value }) -join ', ')) }
@@ -285,7 +291,7 @@ if (($actualLauncherHrefs -join '|') -ne ($expectedLauncherHrefs -join '|')) { $
 Add-Check 'launcher topic cards' ($publishedTopics.Count -gt 0 -and $launcherPass -and $launcherMatches.Count -eq $publishedTopics.Count) $launcherMatches.Count ("cards={0}, published-topics={1}, exact href order" -f $launcherMatches.Count, $publishedTopics.Count)
 
 foreach ($topic in $topics) {
-  $topicHubPath = Join-Path $root ($topic.HubPath -replace '/', '\')
+  $topicHubPath = Join-Path $root ($topic.HubPath)
   $topicHubText = Read-Text $topicHubPath
   $hubPass = $null -ne $topicHubText
   $hubCardMatches = @()
@@ -300,12 +306,14 @@ foreach ($topic in $topics) {
 }
 
 $htmlFiles = @()
-if (Test-Path -LiteralPath $root -PathType Container) { $htmlFiles = @(Get-ChildItem -LiteralPath $root -Recurse -Filter '*.html' -File) }
+if (Test-Path -LiteralPath $root -PathType Container) { $htmlFiles = @(Get-ChildItem -LiteralPath $root -Recurse -Force -Filter '*.html' -File | Where-Object { $_.FullName.Split([IO.Path]::DirectorySeparatorChar) -cnotcontains '.git' }) }
 $staticPass = $true
 $nonAsciiCount = 0; $styleCount = 0; $retiredCount = 0; $rootAssetCount = 0; $remoteAssetCount = 0
 foreach ($file in $htmlFiles) {
   $bytes = [IO.File]::ReadAllBytes($file.FullName)
-  if (@($bytes | Where-Object { $_ -gt 127 }).Count -gt 0) { $nonAsciiCount++; $staticPass = $false; Write-Host ('  non-ASCII bytes: ' + $file.FullName) }
+  $hasNonAscii = $false
+  foreach ($byte in $bytes) { if ($byte -gt 127) { $hasNonAscii = $true; break } }
+  if ($hasNonAscii) { $nonAsciiCount++; $staticPass = $false; Write-Host ('  non-ASCII bytes: ' + $file.FullName) }
   $text = Read-Text $file.FullName
   if ($null -eq $text) { $staticPass = $false; continue }
   if ($text -match '(?i)<style\b') { $styleCount++; $staticPass = $false; Write-Host ('  style tag: ' + $file.FullName) }
@@ -396,7 +404,7 @@ $idSeen = @{}
 foreach ($topic in $topics) {
   $idPass = $true; $recallTotal = 0; $mcqTotal = 0; $chapterPracticeRecall = 0; $chapterPracticeMcq = 0
   $topicIdSeen = @{}
-  $topicHubPath = Join-Path $root ($topic.HubPath -replace '/', '\')
+  $topicHubPath = Join-Path $root ($topic.HubPath)
   $topicStudyPaths = @($topic.Chapters | ForEach-Object { Join-Path $topic.TopicRoot $_.File }) + @($topicHubPath, (Join-Path $topic.TopicRoot 'review.html'), (Join-Path $topic.TopicRoot 'glossary.html'))
   foreach ($path in $topicStudyPaths) {
     $text = Read-Text $path
@@ -433,7 +441,7 @@ foreach ($topic in $topics) {
 }
 
 foreach ($topic in $topics) {
-  $topicHubPath = Join-Path $root ($topic.HubPath -replace '/', '\')
+  $topicHubPath = Join-Path $root ($topic.HubPath)
   $hubText = Read-Text $topicHubPath
   $confusionPass = $registryLoaded -and $null -ne $hubText; $confusionCount = 0
   foreach ($set in $topic.ConfusionSets) {
@@ -541,7 +549,7 @@ if ($null -ne $studyText) {
 }
 foreach ($topic in $topics) {
   $studyPass = $true; $studyPages = 0
-  $topicHubPath = Join-Path $root ($topic.HubPath -replace '/', '\')
+  $topicHubPath = Join-Path $root ($topic.HubPath)
   $studyPagePaths = @($topic.Chapters | ForEach-Object { Join-Path $topic.TopicRoot $_.File }) + @($topicHubPath, (Join-Path $topic.TopicRoot 'review.html'))
   foreach ($path in $studyPagePaths) {
     $text = Read-Text $path
@@ -761,6 +769,7 @@ $hiddenStudyClasses = @()
 $cssFiles = if (Test-Path -LiteralPath $assetRoot -PathType Container) { @(Get-ChildItem -LiteralPath $assetRoot -Recurse -Filter '*.css' -File) } else { @() }
 foreach ($css in $cssFiles) {
   $cssText = Read-Text $css.FullName
+  if ($null -eq $cssText) { $progressPass = $false; continue }
   foreach ($rule in [regex]::Matches($cssText, '([^{}]+)\{([^{}]*)\}')) {
     if ($rule.Groups[2].Value -match '(?i)display\s*:\s*none|visibility\s*:\s*hidden|content-visibility\s*:\s*hidden') {
       foreach ($class in $studyAddedClasses) { if ($rule.Groups[1].Value -match '(?<![\w-])\.' + [regex]::Escape($class) + '(?![\w-])') { $hiddenStudyClasses += $class } }
@@ -983,7 +992,7 @@ foreach ($topic in $publishedTopics) {
   foreach ($key in @('root', 'topic', 'review', 'glossary')) { if (-not $breadcrumbLabels.ContainsKey($key)) { $breadcrumbPass = $false; Write-Host ('  breadcrumb label missing: ' + $topic.Slug + ':' + $key) } }
   if ($leafSource -notmatch 'shortTitle') { $breadcrumbPass = $false; Write-Host ('  breadcrumb leafSource does not declare chapter shortTitle: ' + $topic.Slug) }
   if ($breadcrumbDepths.Count -eq 0 -or $breadcrumbLabels.Count -eq 0) { continue }
-  $topicHubPath = Join-Path $root ($topic.HubPath -replace '/', '\')
+  $topicHubPath = Join-Path $root ($topic.HubPath)
   $breadcrumbPageRecords += [pscustomobject]@{ Path = $topicHubPath; Type = 'hub'; Depth = $breadcrumbDepths['hub']; Labels = @($breadcrumbLabels['root'], $breadcrumbLabels['topic']); Hrefs = @('../../index.html') }
   $breadcrumbPageRecords += [pscustomobject]@{ Path = (Join-Path $topic.TopicRoot 'review.html'); Type = 'review'; Depth = $breadcrumbDepths['review']; Labels = @($breadcrumbLabels['root'], $breadcrumbLabels['topic'], $breadcrumbLabels['review']); Hrefs = @('../../index.html', 'index.html') }
   $breadcrumbPageRecords += [pscustomobject]@{ Path = (Join-Path $topic.TopicRoot 'glossary.html'); Type = 'glossary'; Depth = $breadcrumbDepths['glossary']; Labels = @($breadcrumbLabels['root'], $breadcrumbLabels['topic'], $breadcrumbLabels['glossary']); Hrefs = @('../../index.html', 'index.html') }
@@ -1013,13 +1022,13 @@ foreach ($record in $breadcrumbPageRecords) {
       $breadcrumbAncestorCount++; $href = $anchors[0].Groups[1].Value
       if ($i -ge $record.Hrefs.Count -or $href -ne $record.Hrefs[$i]) { $breadcrumbPass = $false; $expectedHref = if ($i -lt $record.Hrefs.Count) { $record.Hrefs[$i] } else { 'none' }; Write-Host ("  breadcrumb ancestor href mismatch {0} li={1}: actual={2}, expected={3}" -f (Split-Path -Leaf $record.Path), ($i + 1), $href, $expectedHref) }
       $targetHref = ($href -split '#', 2)[0]; if ([string]::IsNullOrWhiteSpace($targetHref)) { $breadcrumbPass = $false; Write-Host ('  empty breadcrumb ancestor href: ' + (Split-Path -Leaf $record.Path)); continue }
-      try { $targetPath = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $record.Path) ($targetHref -replace '/', '\'))) } catch { $targetPath = $null }
+      try { $targetPath = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $record.Path) ($targetHref))) } catch { $targetPath = $null }
       if ($null -eq $targetPath -or -not (Test-Path -LiteralPath $targetPath -PathType Leaf)) { $breadcrumbPass = $false; Write-Host ("  breadcrumb ancestor target missing {0}: {1}" -f (Split-Path -Leaf $record.Path), $href) } elseif ([IO.Path]::GetFullPath($targetPath) -eq [IO.Path]::GetFullPath($record.Path)) { $breadcrumbPass = $false; Write-Host ('  breadcrumb ancestor links to current page: ' + (Split-Path -Leaf $record.Path)) }
     } elseif ($anchors.Count -gt 0) { $breadcrumbPass = $false; Write-Host ('  breadcrumb leaf must not be an anchor: ' + (Split-Path -Leaf $record.Path)) }
   }
   $current = @([regex]::Matches($lis[$lis.Count - 1].Value, '<(?!a\b)[A-Za-z][^>]*\baria-current\s*=\s*["'']page["''][^>]*>')); $currentAnchors = @([regex]::Matches($lis[$lis.Count - 1].Value, '<a\b[^>]*\baria-current\s*=\s*["'']page["'']'))
   if ($current.Count -ne 1 -or $currentAnchors.Count -ne 0) { $breadcrumbPass = $false; Write-Host ("  breadcrumb leaf current marker invalid: {0} non-anchor={1}, anchor={2}" -f (Split-Path -Leaf $record.Path), $current.Count, $currentAnchors.Count) } else { $breadcrumbLeafCount++ }
-  foreach ($a in [regex]::Matches($navText, '<a\b[^>]*\bhref\s*=\s*["'']([^"'']+)["'']')) { $targetHref = ($a.Groups[1].Value -split '#', 2)[0]; try { $targetPath = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $record.Path) ($targetHref -replace '/', '\'))) } catch { $targetPath = $null }; if ($null -ne $targetPath -and [IO.Path]::GetFullPath($targetPath) -eq [IO.Path]::GetFullPath($record.Path)) { $breadcrumbPass = $false; Write-Host ('  breadcrumb contains self-link: ' + (Split-Path -Leaf $record.Path)) } }
+  foreach ($a in [regex]::Matches($navText, '<a\b[^>]*\bhref\s*=\s*["'']([^"'']+)["'']')) { $targetHref = ($a.Groups[1].Value -split '#', 2)[0]; try { $targetPath = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $record.Path) ($targetHref))) } catch { $targetPath = $null }; if ($null -ne $targetPath -and [IO.Path]::GetFullPath($targetPath) -eq [IO.Path]::GetFullPath($record.Path)) { $breadcrumbPass = $false; Write-Host ('  breadcrumb contains self-link: ' + (Split-Path -Leaf $record.Path)) } }
   $leafText = [Net.WebUtility]::HtmlDecode(([regex]::Replace($lis[$lis.Count - 1].Value, '<[^>]*>', '')).Trim())
   if ($record.Type -eq 'chapter') { $breadcrumbLabelCount++; if ($leafText -ne $record.ShortTitle) { $breadcrumbPass = $false; Write-Host ("  breadcrumb shortTitle mismatch {0}: actual='{1}', expected='{2}'" -f (Split-Path -Leaf $record.Path), $leafText, $record.ShortTitle) } } elseif ($leafText -ne $record.Labels[$record.Labels.Count - 1]) { $breadcrumbPass = $false; Write-Host ("  breadcrumb leaf label mismatch {0}: actual='{1}', expected='{2}'" -f (Split-Path -Leaf $record.Path), $leafText, $record.Labels[$record.Labels.Count - 1]) }
 }
