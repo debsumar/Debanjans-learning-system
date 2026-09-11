@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="CCA-F glossary with transcript-derived definitions and chapter discriminators for agent architecture study.">
+<title>CCA-F glossary &middot; CCA-F Notes</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d97757' d='M2 4l6-2 6 2-6 2-6-2Zm0 3 6 2 6-2v3l-6 2-6-2V7Z'/%3E%3C/svg%3E">
+<script src="../../assets/theme.js"></script>
+<link rel="stylesheet" href="../../assets/theme.css">
+<link rel="stylesheet" href="topic.css">
+</head>
+<body data-chapter="glossary" data-domain="mixed" data-weight="reference">
+<a class="skip" href="#main">Skip to content</a>
+<div class="top"><div class="top-inner"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../index.html">Learning System</a></li><li><a href="index.html">CCA-F</a></li><li><span aria-current="page">Glossary</span></li></ol></nav><div class="top-links"><button type="button" class="theme-toggle" id="theme-toggle" title="Switch between dark and light theme"><svg class="icon icon-moon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><svg class="icon icon-sun" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4.2V2.5M12 21.5v-1.7M4.2 12H2.5M21.5 12h-1.7M6.5 6.5 5.3 5.3M18.7 18.7l-1.2-1.2M6.5 17.5l-1.2 1.2M18.7 5.3l-1.2 1.2M12 7.8a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4Z"/></svg><span class="theme-label">Dark</span></button></div></div></div>
+<div class="wrap">
+<header class="head"><h1>CCA-F glossary</h1><p class="kicker">Canonical transcript-derived definitions and chapter discriminators. Follow each link to planned teaching context.</p><div class="pills"><span class="pill">40 terms</span><span class="pill">24 discriminators</span><span class="pill">CCA-F</span></div></header>
+<main id="main">
+<section class="card" id="glossary"><h2>Search the glossary</h2><label for="filter">Filter glossary terms</label><input id="filter" type="search" placeholder="Filter glossary terms"><p id="filter-status" role="status" aria-live="polite"></p><p id="filter-empty" hidden>No glossary terms match your filter.</p>
+<section class="glossary-group" id="terms-group"><h2>Terms</h2><dl class="defs">
+<dt data-term="agentic loop" id="g-agentic-loop">Agentic loop</dt><dd data-term="agentic loop">A repeated context, action, and verification cycle that continues toward a goal and can accept corrective feedback. <a href="08-claude-code-workflows.html#agentic-loop">Chapter context</a></dd>
+<dt data-term="agent sdk" id="g-agent-sdk">Agent SDK</dt><dd data-term="agent sdk">Transcript term for an SDK used in agent examples and contrasted with direct SDK patterns. Specific fields and capabilities require target language and version validation. <a href="12-agent-definitions-delegation.html#sdk-parity">Chapter context</a></dd>
+<dt data-term="claude code" id="g-claude-code">Claude Code</dt><dd data-term="claude code">Transcript-described CLI coding harness that gathers context, acts on a codebase, and verifies results. Product behavior remains version-sensitive. <a href="08-claude-code-workflows.html#harness">Chapter context</a></dd>
+<!-- These terms remain useful definitions; intended first-use links: g-handoff-protocol in 03-coordinator-design.html#handoff; g-context-compaction and g-claude-md in 09-sessions-settings.html#context. -->
+<dt data-term="claude.md" id="g-claude-md">CLAUDE.md</dt><dd data-term="claude.md">Transcript-named project guidance file. The plans place procedures in skills rather than treating this file as the procedure itself. <a href="08-claude-code-workflows.html#harness">Chapter context</a></dd>
+<dt data-term="stop reason" id="g-stop-reason">Stop reason</dt><dd data-term="stop reason">Structured response state used to determine whether a tool call is requested or a turn has completed. Use it with a bounded iteration guard rather than displayed text alone. <a href="01-agent-loops.html#loop-exit">Chapter context</a></dd>
+<dt data-term="tool use" id="g-tool-use">Tool use</dt><dd data-term="tool use">A requested tool call exposed in a response, including tool information and inputs for application handling. It is not the execution result. <a href="01-agent-loops.html#tool-turn">Chapter context</a></dd>
+<dt data-term="tool result" id="g-tool-result">Tool result</dt><dd data-term="tool result">Execution output returned to continue a tool-use conversation. It carries correlation to the requested tool call. <a href="01-agent-loops.html#tool-turn">Chapter context</a></dd>
+<dt data-term="tool use id" id="g-tool-use-id">Tool use ID</dt><dd data-term="tool use id">Identifier that maps a tool result to its specific requested tool call. <a href="01-agent-loops.html#tool-turn">Chapter context</a></dd>
+<dt data-term="tool choice" id="g-tool-choice">Tool choice</dt><dd data-term="tool choice">Constraint selecting whether tool use is optional, requires any available tool, requires one named tool, or is disallowed. Mode behavior is transcript- and version-sensitive. <a href="06-tools-mcp-structured-output.html#tool-choice">Chapter context</a></dd>
+<dt data-term="tool input schema" id="g-tool-input-schema">Tool input schema</dt><dd data-term="tool input schema">Contract describing tool arguments through properties, types, enums, nested objects, and required inputs. <a href="06-tools-mcp-structured-output.html#schemas">Chapter context</a></dd>
+<dt data-term="code-driven decision-making" id="g-code-driven-decision-making">Code-driven decision-making</dt><dd data-term="code-driven decision-making">Application code owns what happens next through fixed logic such as conditions or state transitions. <a href="02-decision-orchestration.html#decision-owner">Chapter context</a></dd>
+<dt data-term="model-driven decision-making" id="g-model-driven-decision-making">Model-driven decision-making</dt><dd data-term="model-driven decision-making">The model selects next actions from the stated goal, runtime context, and available tools. <a href="02-decision-orchestration.html#decision-owner">Chapter context</a></dd>
+<dt data-term="coordinator" id="g-coordinator">Coordinator</dt><dd data-term="coordinator">Central agent that routes work, controls context sharing, handles errors, observes execution, delegates, and aggregates results. <a href="03-coordinator-design.html#hub-spoke">Chapter context</a></dd>
+<dt data-term="research partitioning" id="g-research-partitioning">Research partitioning</dt><dd data-term="research partitioning">Division of selected research into needed, non-overlapping scopes with explicit rules and boundaries. <a href="03-coordinator-design.html#partitioning">Chapter context</a></dd>
+<dt data-term="refinement loop" id="g-refinement-loop">Refinement loop</dt><dd data-term="refinement loop">Coverage-review cycle that identifies gaps, performs gap-only work within a bounded attempt count, then finalizes. <a href="04-reliable-orchestration.html#refinement">Chapter context</a></dd>
+<dt data-term="observability" id="g-observability">Observability</dt><dd data-term="observability">Evidence about execution such as structured traces, inputs, outputs, errors, IDs, latency, and coverage. <a href="04-reliable-orchestration.html#observability">Chapter context</a></dd>
+<dt data-term="structured report" id="g-structured-report">Structured report</dt><dd data-term="structured report">Explicit sub-agent result shape that can preserve success, empty, partial, or failure context for a coordinator. <a href="04-reliable-orchestration.html#reports">Chapter context</a></dd>
+<dt data-term="structured output" id="g-structured-output">Structured output</dt><dd data-term="structured output">Output constrained to an expected data shape for downstream handling. A requested shape is distinct from validated semantic quality. <a href="05-prompt-output-quality.html#validation">Chapter context</a></dd>
+<dt data-term="few-shot prompting" id="g-few-shot-prompting">Few-shot prompting</dt><dd data-term="few-shot prompting">Use of examples, including positive, negative, or scored examples, to constrain a target output. Examples do not guarantee truth. <a href="05-prompt-output-quality.html#examples">Chapter context</a></dd>
+<dt data-term="prompt chaining" id="g-prompt-chaining">Prompt chaining</dt><dd data-term="prompt chaining">Fixed sequential pipeline in which one call output becomes input to the next call. It fits fixed-shape work. <a href="02-decision-orchestration.html#fixed-vs-adaptive">Chapter context</a></dd>
+<dt data-term="dynamic adaptive decomposition" id="g-dynamic-adaptive-decomposition">Dynamic adaptive decomposition</dt><dd data-term="dynamic adaptive decomposition">Evidence-led selection of next work, agents, depth, or order as intermediate results change what is needed. <a href="02-decision-orchestration.html#fixed-vs-adaptive">Chapter context</a></dd>
+<dt data-term="handoff protocol" id="g-handoff-protocol">Handoff protocol</dt><dd data-term="handoff protocol">Structured package assembled before escalation so a recipient receives needed context without searching conversation history. <a href="03-coordinator-design.html#handoff">Chapter context</a></dd>
+<dt data-term="mcp server" id="g-mcp-server">MCP server</dt><dd data-term="mcp server">Configured and installed source whose tools can be discovered at connection time and exposed to the agent. Specific implementation claims require version validation. <a href="06-tools-mcp-structured-output.html#mcp">Chapter context</a></dd>
+<dt data-term="mcp resource" id="g-mcp-resource">MCP resource</dt><dd data-term="mcp resource">MCP capability intended for read-data access, contrasted with tool action intent. Do not infer immutability beyond the source plan. <a href="06-tools-mcp-structured-output.html#mcp">Chapter context</a></dd>
+<dt data-term="agent definition" id="g-agent-definition">Agent definition</dt><dd data-term="agent definition">Pre-message blueprint for agent identity, routing description, prompt, allowed actions, and controls. SDK field names and availability require version validation. <a href="12-agent-definitions-delegation.html#agent-definition">Chapter context</a></dd>
+<dt data-term="allowed tools" id="g-allowed-tools">Allowed tools</dt><dd data-term="allowed tools">Tool capability set permitted to an agent definition or workflow. Exact configuration fields are version-sensitive. <a href="06-tools-mcp-structured-output.html#tool-selection">Chapter context</a></dd>
+<dt data-term="model selection" id="g-model-selection">Model selection</dt><dd data-term="model selection">Choice of model option for task complexity, speed, long context, or plan and execution needs. Named options and behavior require current product verification. <a href="08-claude-code-workflows.html#models">Chapter context</a></dd>
+<dt data-term="session fork" id="g-session-fork">Session fork</dt><dd data-term="session fork">New conversation branch from a prior point that preserves earlier history while later branch state remains isolated. Capability availability requires SDK and version verification. <a href="09-sessions-settings.html#session-lifecycle">Chapter context</a></dd>
+<dt data-term="context window" id="g-context-window">Context window</dt><dd data-term="context window">Available context capacity shared by material such as instructions, skills, messages, and summary headroom. <a href="09-sessions-settings.html#context">Chapter context</a></dd>
+<dt data-term="context compaction" id="g-context-compaction">Context compaction</dt><dd data-term="context compaction">Summarization intended to retain continuity while reducing conversation context use. Its exact command and behavior require version verification. <a href="09-sessions-settings.html#context">Chapter context</a></dd>
+<dt data-term="settings precedence" id="g-settings-precedence">Settings precedence</dt><dd data-term="settings precedence">Ordering that determines which managed, user, project, or local setting applies when scopes overlap. Exact scope behavior requires version verification. <a href="09-sessions-settings.html#settings-scopes">Chapter context</a></dd>
+<dt data-term="permission rule" id="g-permission-rule">Permission rule</dt><dd data-term="permission rule">Authorization rule that allows, asks about, or denies a tool or command under its matcher scope. Product-specific matching behavior requires verification. <a href="10-permission-safety.html#rule-resolution">Chapter context</a></dd>
+<dt data-term="sandbox" id="g-sandbox">Sandbox</dt><dd data-term="sandbox">Execution boundary that constrains Bash-tool host access in the transcript-described flow. It is separate from permission authorization and varies by environment. <a href="10-permission-safety.html#sandbox">Chapter context</a></dd>
+<dt data-term="debug log" id="g-debug-log">Debug log</dt><dd data-term="debug log">Diagnostic record used to inspect session detail, connections, tool state, and reproducible faults. Treat handling and sharing as version- and data-sensitive. <a href="11-diagnostics-automation.html#status-debug">Chapter context</a></dd>
+<dt data-term="provenance" id="g-provenance">Provenance</dt><dd data-term="provenance">Claim origin and location evidence, such as source, document, page, or excerpt, retained with a finding. <a href="07-evidence-context.html#findings">Chapter context</a></dd>
+<dt data-term="finding" id="g-finding">Finding</dt><dd data-term="finding">Structured evidence record that preserves a claim with attribution, location, excerpt, and confidence rather than raw text alone. <a href="07-evidence-context.html#findings">Chapter context</a></dd>
+<dt data-term="findings artifact" id="g-findings-artifact">Findings artifact</dt><dd data-term="findings artifact">Persisted artifact holding exploration knowledge so later synthesis can use evidence without ingesting raw exploration context. <a href="07-evidence-context.html#durable-artifacts">Chapter context</a></dd>
+<dt data-term="task manifest" id="g-task-manifest">Task manifest</dt><dd data-term="task manifest">Persisted task and recovery state used to reconcile interrupted or resumable work. <a href="07-evidence-context.html#durable-artifacts">Chapter context</a></dd>
+<dt data-term="batch processing" id="g-batch-processing">Batch processing</dt><dd data-term="batch processing">Asynchronous submission and later retrieval pattern selected when cost matters more than immediate results. Transcript timing and API details require current verification. <a href="13-batch-and-escalation.html#batch">Chapter context</a></dd>
+<dt data-term="progressive escalation" id="g-progressive-escalation">Progressive escalation</dt><dd data-term="progressive escalation">Support flow that attempts a supported resolution, requests clarification where needed, and escalates according to explicit triggers. <a href="13-batch-and-escalation.html#escalation">Chapter context</a></dd>
+</dl></section>
+<section class="glossary-group" id="discriminators"><h2>Discriminators</h2><p>These contrast two confusable things rather than define one.</p><dl class="defs">
+<dt data-term="tool use vs tool result" id="dl-tool-use-result">Tool use vs Tool result</dt><dd data-term="tool use vs tool result">Request/exposed call versus correlated execution output. <a href="01-agent-loops.html#tool-turn">Chapter context</a></dd>
+<dt data-term="structured completion vs displayed text" id="dl-end-turn-text">Structured completion vs displayed text</dt><dd data-term="structured completion vs displayed text">Structured completion state versus potentially misleading content. <a href="01-agent-loops.html#loop-exit">Chapter context</a></dd>
+<dt data-term="code driven vs model driven" id="dl-code-model-decision">Code-driven vs model-driven</dt><dd data-term="code driven vs model driven">Who owns next decision. <a href="02-decision-orchestration.html#decision-owner">Chapter context</a></dd>
+<dt data-term="prompt chain vs adaptive decomposition" id="dl-chain-adaptive">Prompt chain vs adaptive decomposition</dt><dd data-term="prompt chain vs adaptive decomposition">Fixed order versus evidence-selected work. <a href="02-decision-orchestration.html#fixed-vs-adaptive">Chapter context</a></dd>
+<dt data-term="coordinator vs sub agent" id="dl-coordinator-spoke">Coordinator vs sub-agent</dt><dd data-term="coordinator vs sub agent">Orchestrates/routes/aggregates versus bounded execution. <a href="03-coordinator-design.html#hub-spoke">Chapter context</a></dd>
+<dt data-term="parallel vs sequential" id="dl-parallel-sequential">Parallel vs sequential</dt><dd data-term="parallel vs sequential">Independence versus prior-result dependency. <a href="03-coordinator-design.html#delegation">Chapter context</a></dd>
+<dt data-term="partitioning vs selection" id="dl-partition-selection">Partitioning vs selection</dt><dd data-term="partitioning vs selection">Divides selected work versus decides whether work is needed. <a href="03-coordinator-design.html#partitioning">Chapter context</a></dd>
+<dt data-term="validation retry vs task recovery" id="dl-retry-recovery">Validation retry vs task recovery</dt><dd data-term="validation retry vs task recovery">Corrects artifact versus resumes interrupted durable task. <a href="04-reliable-orchestration.html#recovery">Chapter context</a></dd>
+<dt data-term="schema validity vs semantic quality" id="dl-schema-semantic">Schema validity vs semantic quality</dt><dd data-term="schema validity vs semantic quality">Format contract versus factual/business correctness. <a href="05-prompt-output-quality.html#validation">Chapter context</a></dd>
+<dt data-term="self review vs independent review" id="dl-self-independent-review">Self-review vs independent review</dt><dd data-term="self review vs independent review">Retained generator history versus fresh context. <a href="05-prompt-output-quality.html#review">Chapter context</a></dd>
+<dt data-term="mcp resource vs mcp tool" id="dl-resource-tool">MCP resource vs MCP tool</dt><dd data-term="mcp resource vs mcp tool">Read-data intent versus action intent; no immutability claim. <a href="06-tools-mcp-structured-output.html#mcp">Chapter context</a></dd>
+<dt data-term="any vs named tool" id="dl-any-named-tool">any vs named tool</dt><dd data-term="any vs named tool">Any listed tool versus one required named tool. <a href="06-tools-mcp-structured-output.html#tool-choice">Chapter context</a></dd>
+<dt data-term="provenance vs confidence" id="dl-provenance-confidence">Provenance vs confidence</dt><dd data-term="provenance vs confidence">Claim origin/location versus certainty signal. <a href="07-evidence-context.html#findings">Chapter context</a></dd>
+<dt data-term="findings vs manifest" id="dl-findings-manifest">Findings vs manifest</dt><dd data-term="findings vs manifest">Evidence knowledge versus task/recovery state. <a href="07-evidence-context.html#durable-artifacts">Chapter context</a></dd>
+<dt data-term="claude code workflow vs agent sdk application" id="dl-claude-code-sdk">Claude Code workflow vs Agent SDK application</dt><dd data-term="claude code workflow vs agent sdk application">CLI coding harness versus program integration boundary. <a href="08-claude-code-workflows.html#setup-boundaries">Chapter context</a></dd>
+<dt data-term="fork vs resume vs rewind" id="dl-fork-resume-rewind">Fork vs resume vs rewind</dt><dd data-term="fork vs resume vs rewind">New branch, continuation, or changed history point. <a href="09-sessions-settings.html#session-lifecycle">Chapter context</a></dd>
+<dt data-term="compact vs clear" id="dl-compact-clear">Compact vs clear</dt><dd data-term="compact vs clear">Summarized continuity versus conversation-history removal. <a href="09-sessions-settings.html#context">Chapter context</a></dd>
+<dt data-term="project vs local settings" id="dl-project-local">Project vs local settings</dt><dd data-term="project vs local settings">Shared repository convention versus untracked local preference. <a href="09-sessions-settings.html#settings-scopes">Chapter context</a></dd>
+<dt data-term="permission rule vs sandbox" id="dl-permission-sandbox">Permission rule vs sandbox</dt><dd data-term="permission rule vs sandbox">Authorization versus Bash execution environment. <a href="10-permission-safety.html#sandbox">Chapter context</a></dd>
+<dt data-term="do not ask vs bypass" id="dl-ask-bypass">Do-not-ask vs bypass</dt><dd data-term="do not ask vs bypass">Auto-deny unless approved versus skip prompts. <a href="10-permission-safety.html#modes">Chapter context</a></dd>
+<dt data-term="completion text vs durable completion" id="dl-complete-durable">Completion text vs durable completion</dt><dd data-term="completion text vs durable completion">Reported success versus verified artifact. <a href="11-diagnostics-automation.html#run-evidence">Chapter context</a></dd>
+<dt data-term="agent description vs skill procedure" id="dl-agent-description-procedure">Agent description vs skill procedure</dt><dd data-term="agent description vs skill procedure">Routing/invocation label versus executable procedure. <a href="12-agent-definitions-delegation.html#agent-definition">Chapter context</a></dd>
+<dt data-term="batch id vs custom id" id="dl-batch-custom-id">Batch ID vs custom_id</dt><dd data-term="batch id vs custom id">Batch retrieval identity versus request/result correlation. <a href="13-batch-and-escalation.html#batch">Chapter context</a></dd>
+<dt data-term="explicit human request vs frustration" id="dl-request-frustration">Explicit human request vs frustration</dt><dd data-term="explicit human request vs frustration">Immediate escalation versus attempt supported solution first. <a href="13-batch-and-escalation.html#escalation">Chapter context</a></dd>
+</dl></section>
+</main>
+<footer class="foot">CCA-F glossary &middot; Readable with JavaScript disabled.</footer>
+</div>
+<script>
+const filter = document.querySelector('#filter');
+const terms = [...document.querySelectorAll('#glossary dt[data-term]')];
+const groups = [...document.querySelectorAll('#glossary .glossary-group')];
+const status = document.querySelector('#filter-status');
+const empty = document.querySelector('#filter-empty');
+const update = () => {
+  const query = filter?.value.toLowerCase() ?? '';
+  let count = 0;
+  terms.forEach((term) => {
+    const match = term.textContent.toLowerCase().includes(query);
+    term.hidden = !match;
+    term.nextElementSibling?.toggleAttribute('hidden', !match);
+    if (match) count += 1;
+  });
+  groups.forEach((group) => {
+    group.hidden = ![...group.querySelectorAll('dt[data-term]')].some((term) => !term.hidden);
+  });
+  status.textContent = count === 0 ? 'No glossary terms match your filter.' : `${count} glossary terms shown.`;
+  empty.hidden = count !== 0;
+};
+filter?.addEventListener('input', update);
+update();
+</script>
+</body>
+</html>

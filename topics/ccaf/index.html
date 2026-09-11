@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="CCA-F hub for provisional Anthropic architecture study topics, chapter links, and discrimination notes.">
+<title>CCA-F Notes</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23d97757' d='M2 4l6-2 6 2-6 2-6-2Zm0 3 6 2 6-2v3l-6 2-6-2V7Z'/%3E%3C/svg%3E">
+<script src="../../assets/theme.js"></script>
+<link rel="stylesheet" href="../../assets/theme.css">
+<link rel="stylesheet" href="topic.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="top"><div class="top-inner"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../index.html">Learning System</a></li><li><span aria-current="page">CCA-F</span></li></ol></nav><div class="top-links"><a href="#confusion">Confusion index</a><button type="button" class="theme-toggle" id="theme-toggle" title="Switch between dark and light theme"><svg class="icon icon-moon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><svg class="icon icon-sun" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4.2V2.5M12 21.5v-1.7M4.2 12H2.5M21.5 12h-1.7M6.5 6.5 5.3 5.3M18.7 18.7l-1.2-1.2M6.5 17.5l-1.2 1.2M18.7 5.3l-1.2 1.2M12 7.8a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4Z"/></svg><span class="theme-label">Dark</span></button></div></div></div>
+<div class="wrap">
+<header class="head"><h1>CCA-F Notes</h1><p class="kicker">Offline study notes for CCA-F from vendor Anthropic, organized as a provisional objective map.</p><p class="kicker">Anthropic has not confirmed domain weights or official objectives here; this mapping remains provisional pending the official guide.</p></header>
+<main id="main">
+<section class="card" id="objectives">
+<h2>Topics in scope</h2>
+<label for="filter">Filter topics</label><input id="filter" type="search" placeholder="Filter topics"><p id="filter-status" role="status" aria-live="polite"></p><p id="filter-empty" hidden>No topics match your filter.</p>
+<h3 class="domain">Domain 1 &middot; Agentic architecture and orchestration &middot; weight unverified</h3>
+<div class="grid">
+<article class="card"><a href="01-agent-loops.html"><h3>01 &middot; Agent loops and tool-result control</h3><p>Trace structured tool turns, correlated results, state append, and bounded exits.</p></a></article>
+<article class="card"><a href="02-decision-orchestration.html"><h3>02 &middot; Decision ownership and orchestration</h3><p>Choose code-owned routes, model-led decisions, fixed chains, and adaptive work.</p></a></article>
+<article class="card"><a href="03-coordinator-design.html"><h3>03 &middot; Coordinator and multi-agent design</h3><p>Design hub-and-spoke ownership, delegation, partitions, and context handoff.</p></a></article>
+<article class="card"><a href="04-reliable-orchestration.html"><h3>04 &middot; Reliable orchestration and recovery</h3><p>Use coverage gates, structured reports, audit evidence, and durable recovery.</p></a></article>
+</div>
+<h3 class="domain">Domain 4 &middot; Prompt engineering and structured output &middot; weight unverified</h3>
+<div class="grid">
+<article class="card"><a href="05-prompt-output-quality.html"><h3>05 &middot; Prompt, output, and review quality</h3><p>Constrain output with examples, criteria, layered validation, and independent review.</p></a></article>
+</div>
+<h3 class="domain">Domain 2 &middot; Tool design and MCP integration &middot; weight unverified</h3>
+<div class="grid">
+<article class="card"><a href="06-tools-mcp-structured-output.html"><h3>06 &middot; Tools, MCP, and structured output</h3><p>Choose least-scope tools, schemas, control modes, and MCP capabilities.</p></a></article>
+</div>
+<h3 class="domain">Domain 5 &middot; Context management and reliability &middot; weight unverified</h3>
+<div class="grid">
+<article class="card"><a href="07-evidence-context.html"><h3>07 &middot; Evidence, synthesis, and context control</h3><p>Preserve provenance, conflicts, precision, findings, and recovery state.</p></a></article>
+</div>
+<h3 class="domain">Domain 3 &middot; Claude Code configuration and workflows &middot; weight unverified</h3>
+<div class="grid">
+<article class="card"><a href="08-claude-code-workflows.html"><h3>08 &middot; Claude Code workflows and model use</h3><p>Study coding harness loops, capability choices, setup boundaries, and SDK separation.</p></a></article>
+<article class="card"><a href="09-sessions-settings.html"><h3>09 &middot; Sessions, context, and settings</h3><p>Choose session state, context actions, settings scope, and version-aware verification.</p></a></article>
+<article class="card"><a href="10-permission-safety.html"><h3>10 &middot; Permissions, sandboxing, and safe execution</h3><p>Resolve rules, separate authorization from containment, and limit bypass risk.</p></a></article>
+<article class="card"><a href="11-diagnostics-automation.html"><h3>11 &middot; Diagnostics and repository automation</h3><p>Diagnose with evidence and validate automation at behavior and artifact boundaries.</p></a></article>
+</div>
+<h3 class="domain">Domain 1 &middot; Agentic architecture and orchestration &middot; weight unverified</h3>
+<div class="grid">
+<article class="card"><a href="12-agent-definitions-delegation.html"><h3>12 &middot; Agent definitions and delegation</h3><p>Define agent boundaries, SDK checks, parallel-safe work, and clear ownership.</p></a></article>
+</div>
+<h3 class="domain">Domain 2 &middot; Tool design and MCP integration &middot; weight unverified</h3>
+<div class="grid">
+<article class="card"><a href="13-batch-and-escalation.html"><h3>13 &middot; Batch operations and human escalation</h3><p>Use deferred work, correlation identifiers, progressive escalation, and handoff state.</p></a></article>
+</div>
+</section>
+<section class="card" id="study-tools"><h2>Study tools</h2><p><a href="review.html">Interleaved review</a> mixes CCAF discrimination sets across chapters. <a href="glossary.html">Glossary</a> makes chapter definitions searchable.</p><p><strong>Priority while weights remain unverified:</strong> work due, missed, and low-confidence items first. Do not rank study time by claimed exam weight until Anthropic publishes an official guide.</p></section>
+<section class="card" id="confusion"><h2>Confusion index</h2><div class="tw"><table class="t"><thead><tr><th scope="col">Mix-up</th><th scope="col">One-line discriminator</th><th scope="col">Notes</th></tr></thead><tbody>
+<tr><td>Tool use vs tool result</td><td>Request/exposed call versus correlated execution output.</td><td><a href="01-agent-loops.html#tool-turn">Agent loops notes</a></td></tr>
+<tr><td>End turn vs text</td><td>Structured completion versus potentially misleading content.</td><td><a href="01-agent-loops.html#loop-exit">Agent loops notes</a></td></tr>
+<tr><td>Code vs model decision</td><td>Who owns next decision.</td><td><a href="02-decision-orchestration.html#decision-owner">Decision orchestration notes</a></td></tr>
+<tr><td>Chain vs adaptive</td><td>Fixed order versus evidence-selected work.</td><td><a href="02-decision-orchestration.html#fixed-vs-adaptive">Decision orchestration notes</a></td></tr>
+<tr><td>Coordinator vs spoke</td><td>Orchestrates, routes, and aggregates versus bounded execution.</td><td><a href="03-coordinator-design.html#hub-spoke">Coordinator design notes</a></td></tr>
+<tr><td>Parallel vs sequential</td><td>Independence versus prior-result dependency.</td><td><a href="03-coordinator-design.html#delegation">Coordinator design notes</a></td></tr>
+<tr><td>Partition vs selection</td><td>Divides selected work versus decides whether work is needed.</td><td><a href="03-coordinator-design.html#partitioning">Coordinator design notes</a></td></tr>
+<tr><td>Retry vs recovery</td><td>Corrects artifact versus resumes interrupted durable task.</td><td><a href="04-reliable-orchestration.html#recovery">Reliable orchestration notes</a></td></tr>
+<tr><td>Schema vs semantic</td><td>Format contract versus factual or business correctness.</td><td><a href="05-prompt-output-quality.html#validation">Prompt and output notes</a></td></tr>
+<tr><td>Self vs independent review</td><td>Retained generator history versus fresh context.</td><td><a href="05-prompt-output-quality.html#review">Prompt and output notes</a></td></tr>
+<tr><td>Resource vs tool</td><td>Read-data intent versus action intent; no immutability claim.</td><td><a href="06-tools-mcp-structured-output.html#mcp">Tools and MCP notes</a></td></tr>
+<tr><td>Any vs named tool</td><td>Any listed tool versus one required named tool.</td><td><a href="06-tools-mcp-structured-output.html#tool-choice">Tools and MCP notes</a></td></tr>
+<tr><td>Provenance vs confidence</td><td>Claim origin and location versus certainty signal.</td><td><a href="07-evidence-context.html#findings">Evidence and context notes</a></td></tr>
+<tr><td>Findings vs manifest</td><td>Evidence knowledge versus task and recovery state.</td><td><a href="07-evidence-context.html#durable-artifacts">Evidence and context notes</a></td></tr>
+<tr><td>Claude Code vs SDK</td><td>CLI coding harness versus program integration boundary.</td><td><a href="08-claude-code-workflows.html#setup-boundaries">Claude Code workflow notes</a></td></tr>
+<tr><td>Fork vs resume vs rewind</td><td>New branch, continuation, or changed history point.</td><td><a href="09-sessions-settings.html#session-lifecycle">Sessions and settings notes</a></td></tr>
+<tr><td>Compact vs clear</td><td>Summarized continuity versus conversation-history removal.</td><td><a href="09-sessions-settings.html#context">Sessions and settings notes</a></td></tr>
+<tr><td>Project vs local</td><td>Shared repository convention versus untracked local preference.</td><td><a href="09-sessions-settings.html#settings-scopes">Sessions and settings notes</a></td></tr>
+<tr><td>Permission vs sandbox</td><td>Authorization versus Bash execution environment.</td><td><a href="10-permission-safety.html#sandbox">Permission safety notes</a></td></tr>
+<tr><td>Ask vs bypass</td><td>Auto-deny unless approved versus skip prompts.</td><td><a href="10-permission-safety.html#modes">Permission safety notes</a></td></tr>
+<tr><td>Complete vs durable</td><td>Reported success versus verified artifact.</td><td><a href="11-diagnostics-automation.html#run-evidence">Diagnostics notes</a></td></tr>
+<tr><td>Agent description vs procedure</td><td>Routing or invocation label versus executable procedure.</td><td><a href="12-agent-definitions-delegation.html#agent-definition">Agent delegation notes</a></td></tr>
+<tr><td>Batch vs custom ID</td><td>Batch retrieval identity versus request and result correlation.</td><td><a href="13-batch-and-escalation.html#batch">Batch and escalation notes</a></td></tr>
+<tr><td>Request vs frustration</td><td>Immediate escalation versus attempt supported solution first.</td><td><a href="13-batch-and-escalation.html#escalation">Batch and escalation notes</a></td></tr>
+</tbody></table></div></section>
+<div id="study-summary"></div>
+</main>
+<footer class="foot">Scope: provisional CCA-F objective mapping for Anthropic study. Official objectives and domain weights remain unverified pending the official guide.</footer>
+</div>
+<script>
+const filter = document.querySelector('#filter');
+const cards = [...document.querySelectorAll('.grid .card')];
+const domains = [...document.querySelectorAll('h3.domain')];
+const status = document.querySelector('#filter-status');
+const empty = document.querySelector('#filter-empty');
+const update = () => {
+  const query = filter?.value.toLowerCase() ?? '';
+  const visible = cards.filter((card) => {
+    const match = card.textContent.toLowerCase().includes(query);
+    card.hidden = !match;
+    return match;
+  });
+  domains.forEach((domain) => {
+    const grid = domain.nextElementSibling;
+    domain.hidden = !grid?.querySelector('.card:not([hidden])');
+  });
+  status.textContent = visible.length === 0 ? 'No topics match your filter.' : `${visible.length} topics shown.`;
+  empty.hidden = visible.length !== 0;
+};
+filter?.addEventListener('input', update);
+update();
+</script>
+<script src="../../assets/study.js"></script>
+</body>
+</html>

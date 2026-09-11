@@ -194,6 +194,33 @@ Each page ships diagrams, comparison tables, callouts, MCQs, and active recall. 
 
 ---
 
+### ![CCA-F](https://img.shields.io/badge/CCA--F-Claude_Certified_Architect_Foundations-d97757?style=flat-square) &middot; 16 pages
+
+<details>
+<summary><b>13 chapters, mapped to provisional domains</b></summary>
+
+| # | Chapter | Domain |
+|:--|:--|:--|
+| 01 | Agent loops and tool-result control | Agentic architecture |
+| 02 | Decision ownership and orchestration | Agentic architecture |
+| 03 | Coordinator and multi-agent design | Agentic architecture |
+| 04 | Reliable orchestration and recovery | Agentic architecture |
+| 05 | Prompt, output, and review quality | Prompt engineering |
+| 06 | Tools, MCP, and structured output | Tool design and MCP |
+| 07 | Evidence, synthesis, and context control | Context and reliability |
+| 08 | Claude Code workflows and model use | Claude Code |
+| 09 | Sessions, context, and settings | Claude Code |
+| 10 | Permissions, sandboxing, and safe execution | Claude Code |
+| 11 | Diagnostics and repository automation | Claude Code |
+| 12 | Agent definitions and delegation | Agentic architecture |
+| 13 | Batch operations and human escalation | Tool design and MCP |
+
+Objective wording and domain weights stay marked `UNVERIFIED` until the official Anthropic exam guide is published. Planning notes live in `docs/plans/ccaf/`.
+
+</details>
+
+---
+
 ## 📐 Guardrails
 
 | Never | Because |
