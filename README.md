@@ -257,6 +257,8 @@ Objective wording and domain weights stay marked `UNVERIFIED` until the official
 
 Needs a human eye: rendered dark/light appearance and browser-specific persistence across standalone file URLs.
 
+Gates are topic-aware: expectations derive from `assets/registry.js` per topic, so adding a topic does not require editing counts. The `verify` GitHub Actions workflow runs the script on every push and pull request, which is how it runs at all on a host without PowerShell.
+
 </details>
 
 ---

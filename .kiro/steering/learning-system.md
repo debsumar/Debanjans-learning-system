@@ -14,7 +14,10 @@ Detailed runbooks: `/add-topic`, `/author-page`, `/author-diagram`,
 - Presentation lives in `assets/`; never duplicate it in pages.
 - Every page stays readable with JavaScript disabled.
 - `C:\K4U\AZ900-Notes` is untouched original rollback source; never modify it.
-- Run `tools\verify.ps1`; require 0 failures before committing.
+- Run the verifier and require 0 failures before committing.
+- On macOS or Linux with PowerShell: `pwsh -NoProfile -File ./tools/verify.ps1`.
+- Without a local PowerShell runtime, the `verify` GitHub Actions workflow runs it on every push and pull request; a red run blocks the change.
+- On Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify.ps1`.
 - `localStorage` is per-file-URL when pages open from disk.
 - Study and theme state therefore do not follow readers across disk pages.
 - State works across pages on hosted GitHub Pages.
