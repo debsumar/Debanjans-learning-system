@@ -463,7 +463,7 @@ globalThis.LEARNING_SYSTEM = {
             geometryRules: ["connector endpoints terminate exactly on a box face", "horizontal connectors sit at the shared vertical centre of both joined boxes", "vertical connectors sit at the shared horizontal centre of both joined boxes", "arrowhead tip coincides with connector endpoint", "centred labels use text-anchor=middle at the box centre", "labels fit inside their box", "nothing sits outside the viewBox", "no stroke sits exactly on the viewBox edge"],
             uses: [
               { chapter: "c01", section: "tool-turn", label: "Tool request, dispatch, correlated result, append, and terminal response" },
-              { chapter: "c04", section: "refinement", label: "Initial work, coverage check, gap retry, and terminal gate" },
+              { chapter: "c04", section: "refinement", label: "Initial work, coverage check, gap iteration, and terminal gate" },
               { chapter: "c05", section: "validation", label: "Requirement, examples and criteria, validation, and independent review" },
               { chapter: "c07", section: "synthesis", label: "Source, finding, synthesis, and attributed conflict-aware answer" },
               { chapter: "c08", section: "agentic-loop", label: "Gather context, action, verification, and feedback" },
