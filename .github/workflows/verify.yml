@@ -1,0 +1,33 @@
+name: verify
+
+# Runs the repository's static verifier on a GitHub runner, because the
+# authoring host is macOS without a PowerShell runtime. This is author
+# tooling only: the site itself stays a no-build static file set.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Report runtime versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion.ToString()
+          node --version
+
+      - name: Run static verifier
+        shell: pwsh
+        run: |
+          & ./tools/verify.ps1
+          exit $LASTEXITCODE
